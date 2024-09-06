@@ -50,12 +50,12 @@ async def on_command(ctx):
 async def scrape(ctx, url: str):
     scraped_data = scrape_website(url)
     if scraped_data is not None:
-        table = "```\n+-----------------------+-----------------------+\n| Nation Name          | Status               |\n+-----------------------+-----------------------+\n"
+        table = "```\n+-----------------+---------------+\n| Nation Name     | Status       |\n+-----------------+---------------+\n"
         for nation_name, status in scraped_data:
             if nation_name is None:
                 nation_name = 'Failed to scrape nation name'
-            table += f"| {nation_name:<18} | {', '.join(status):<18} |\n"
-        table += "+-----------------------+-----------------------+\n"
+            table += f"| {nation_name:<14} | {', '.join(status):<14} |\n"
+        table += "+-----------------+---------------+\n"
         if len(table) > 2000:
             logger.warning(f"Attempting to send large message, may exceed limits. Message length: {len(table)}")
             messages = [table[i:i + 2000] for i in range(0, len(table), 2000)]
@@ -68,3 +68,4 @@ async def scrape(ctx, url: str):
 
 # Run the bot
 bot.run(TOKEN)
+
