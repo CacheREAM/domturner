@@ -30,7 +30,14 @@ def scrape_website(url):
             status_cells = cell.parent.find_all('td', class_=lambda x: x in ['submitted', 'unsubmitted', 'unfinished', 'computer', 'dead'])
             status = [cell.text.strip() for cell in status_cells]
             scraped_data.append((nation_name, status))
-        return scraped_data
+        # Get the text from the striped-table inside the pane status div
+        striped_table = soup.find('div', class_='pane status').find('table', class_='striped-table')
+        table_text = ''
+        for row in striped_table.find_all('tr'):
+            cells = row.find_all('td')
+            for cell in cells:
+                table_text += cell.text.strip() + '\n'
+        return scraped_data, table_text
     except Exception as e:
         logger.error(f'Error: {e}')
         return None
@@ -39,7 +46,7 @@ def scrape_website(url):
 def is_owner(ctx):
     return ctx.author.id in OWNER_IDS
 
-# Command to scrape website
+# Event to log commands
 @bot.event
 async def on_command(ctx):
     logger.info(f"Command '{ctx.command}' ran by user {ctx.author} with ID {ctx.author.id} at {ctx.message.created_at}")
@@ -48,7 +55,7 @@ async def on_command(ctx):
 @bot.command()
 @commands.check(is_owner)
 async def scrape(ctx, url: str):
-    scraped_data = scrape_website(url)
+    scraped_data, table_text = scrape_website(url)
     if scraped_data is not None:
         table = "```\n+-----------------+---------------+\n| Nation Name     | Status       |\n+-----------------+---------------+\n"
         for nation_name, status in scraped_data:
@@ -62,10 +69,14 @@ async def scrape(ctx, url: str):
             for message in messages:
                 await ctx.send(message)
         else:
-            await ctx.send(table + "\n```")
+            await ctx.send(table + "\n" + table_text + "\n```")
+        if len(table_text) > 2000:
+            logger.warning(f"Attempting to send large message, may exceed limits. Message length: {len(table_text)}")
+            messages = [table_text[i:i + 2000] for i in range(0, len(table_text), 2000)]
+            for message in messages:
+                await ctx.send(message)
     else:
         await ctx.send('Failed to scrape website')
 
 # Run the bot
 bot.run(TOKEN)
-
