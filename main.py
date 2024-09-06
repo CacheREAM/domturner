@@ -50,21 +50,19 @@ async def on_command(ctx):
 async def scrape(ctx, url: str):
     scraped_data = scrape_website(url)
     if scraped_data is not None:
-        data_to_send = ''
-        data_to_send += "```\n"
+        table = "```\n+-----------------------+-----------------------+\n| Nation Name          | Status               |\n+-----------------------+-----------------------+\n"
         for nation_name, status in scraped_data:
             if nation_name is None:
-                data_to_send += 'Failed to scrape nation name\n'
-            else:
-                data_to_send += f'Nation Name: {nation_name} Status: {", ".join(status)}\n'
-        if len(data_to_send) > 2000:
-            logger.warning(f"Attempting to send large message, may exceed limits. Message length: {len(data_to_send)}")
-            messages = [data_to_send[i:i + 2000] for i in range(0, len(data_to_send), 2000)]
+                nation_name = 'Failed to scrape nation name'
+            table += f"| {nation_name:<18} | {', '.join(status):<18} |\n"
+        table += "+-----------------------+-----------------------+\n"
+        if len(table) > 2000:
+            logger.warning(f"Attempting to send large message, may exceed limits. Message length: {len(table)}")
+            messages = [table[i:i + 2000] for i in range(0, len(table), 2000)]
             for message in messages:
                 await ctx.send(message)
         else:
-            data_to_send += "\n```"
-            await ctx.send(data_to_send)
+            await ctx.send(table + "\n```")
     else:
         await ctx.send('Failed to scrape website')
 
