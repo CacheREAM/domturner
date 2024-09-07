@@ -37,10 +37,12 @@ def scrape_website(url):
             cells = row.find_all('td')
             for cell in cells:
                 table_text += cell.text.strip() + '\n'
-        return scraped_data, table_text
+        # Get the game name
+        game_name = soup.find('h1').text.strip()
+        return scraped_data, table_text, game_name
     except Exception as e:
         logger.error(f'Error: {e}')
-        return None
+        return None, None, None
 
 # Check if user is owner
 def is_owner(ctx):
@@ -55,26 +57,22 @@ async def on_command(ctx):
 @bot.command()
 @commands.check(is_owner)
 async def scrape(ctx, url: str):
-    scraped_data, table_text = scrape_website(url)
-    if scraped_data is not None:
-        table = "```\n+-----------------+---------------+\n| Nation Name     | Status       |\n+-----------------+---------------+\n"
+    scraped_data, table_text, game_name = scrape_website(url)
+    if scraped_data is not None and table_text is not None and game_name is not None:
+        table = "+-----------------+---------------+\n| Nation Name     | Status       |\n+-----------------+---------------+\n"
         for nation_name, status in scraped_data:
             if nation_name is None:
                 nation_name = 'Failed to scrape nation name'
             table += f"| {nation_name:<14} | {', '.join(status):<14} |\n"
         table += "+-----------------+---------------+\n"
-        if len(table) > 2000:
-            logger.warning(f"Attempting to send large message, may exceed limits. Message length: {len(table)}")
-            messages = [table[i:i + 2000] for i in range(0, len(table), 2000)]
+        output = f"```\n{game_name}\n{table}\n{table_text}\n```"
+        if len(output) > 2000:
+            logger.warning(f"Attempting to send large message, may exceed limits. Message length: {len(output)}")
+            messages = [output[i:i + 2000] for i in range(0, len(output), 2000)]
             for message in messages:
                 await ctx.send(message)
         else:
-            await ctx.send(table + "\n" + table_text + "\n```")
-        if len(table_text) > 2000:
-            logger.warning(f"Attempting to send large message, may exceed limits. Message length: {len(table_text)}")
-            messages = [table_text[i:i + 2000] for i in range(0, len(table_text), 2000)]
-            for message in messages:
-                await ctx.send(message)
+            await ctx.send(output)
     else:
         await ctx.send('Failed to scrape website')
 
