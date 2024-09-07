@@ -5,6 +5,21 @@ from bs4 import BeautifulSoup
 import logging
 from config import TOKEN, OWNER_IDS
 
+EMOJIS = {
+    'dead': '\u274E',
+    'computer': '\u274E',
+    'unfinished': '❌',
+    'submitted': '\u2705',
+    'unsubmitted': '❌'
+}
+
+EMOJI_MODE = True
+
+SPACER1 = "+----------------+----------------+\n| Nation Name    | Status         |\n+----------------+----------------+\n"
+SPACER2 = "+----------------+----------------+\n"
+EMOJISPACER1 = "+----------------+-----------------+\n| Nation Name    | Status          |\n+----------------+-----------------+\n"
+EMOJISPACER2 = "+----------------+-----------------+\n"
+
 intents = discord.Intents.default()
 intents.typing = False  # Optional: set to True if your bot needs to detect typing status
 intents.presences = False  # Optional: set to True if your bot needs to detect presence status
@@ -57,14 +72,22 @@ async def on_command(ctx):
 @bot.command()
 @commands.check(is_owner)
 async def scrape(ctx, url: str):
+    global EMOJI_MODE
     scraped_data, table_text, game_name = scrape_website(url)
     if scraped_data is not None and table_text is not None and game_name is not None:
-        table = "+-----------------+---------------+\n| Nation Name     | Status       |\n+-----------------+---------------+\n"
+        if EMOJI_MODE:
+            table = EMOJISPACER1
+        else:
+            table = SPACER1
         for nation_name, status in scraped_data:
             if nation_name is None:
                 nation_name = 'Failed to scrape nation name'
+            if EMOJI_MODE:
+                status = [f"{EMOJIS.get(cell, '')} {cell}" for cell in status]
             table += f"| {nation_name:<14} | {', '.join(status):<14} |\n"
-        table += "+-----------------+---------------+\n"
+        if EMOJI_MODE:
+            table += EMOJISPACER2
+        else: table += SPACER2
         output = f"```\n{game_name}\n{table}\n{table_text}\n```"
         if len(output) > 2000:
             logger.warning(f"Attempting to send large message, may exceed limits. Message length: {len(output)}")
@@ -75,6 +98,14 @@ async def scrape(ctx, url: str):
             await ctx.send(output)
     else:
         await ctx.send('Failed to scrape website')
+
+# Command to toggle emoji mode
+@bot.command()
+@commands.check(is_owner)
+async def emojimode(ctx):
+    global EMOJI_MODE
+    EMOJI_MODE = not EMOJI_MODE
+    await ctx.send(f"Emoji mode is now {'enabled' if EMOJI_MODE else 'disabled'}")
 
 # Run the bot
 bot.run(TOKEN)
