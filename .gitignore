@@ -4,6 +4,9 @@ env/
 # Private config (Has your key in it)
 config.py
 
+# Channel data file
+channels.json
+
 # User data file
 data.json
 

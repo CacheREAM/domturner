@@ -4,6 +4,8 @@ import requests
 from bs4 import BeautifulSoup
 import logging
 from config import TOKEN, OWNER_IDS
+import json
+import os
 
 EMOJIS = {
     'dead': '\u274E',
@@ -32,6 +34,51 @@ bot = commands.Bot(command_prefix='?', intents=intents)
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger()
 
+# Check if user is owner
+def is_owner(ctx):
+    return ctx.author.id in OWNER_IDS
+
+# Event to log commands
+@bot.event
+async def on_command(ctx):
+    logger.info(f"Command '{ctx.command}' ran by user {ctx.author} with ID {ctx.author.id} at {ctx.message.created_at}")
+
+# Channels file name
+CHANNELS_FILE = 'channels.json'
+
+# Load channels from file
+if os.path.exists(CHANNELS_FILE):
+    with open(CHANNELS_FILE, 'r') as f:
+        channels = json.load(f)
+else:
+    channels = {}
+
+# Function to save channels to file
+def save_channels():
+    with open(CHANNELS_FILE, 'w') as f:
+        json.dump(channels, f)
+
+# Command to bind a channel to a URL
+@bot.command()
+@commands.check(is_owner)
+async def bind(ctx, url: str):
+    channel_id = str(ctx.channel.id)
+    channels[channel_id] = url
+    save_channels()
+    await ctx.send(f"Bound channel {ctx.channel.mention} to URL {url}")
+
+# Command to remove a bound channel
+@bot.command()
+@commands.check(is_owner)
+async def unbind(ctx):
+    channel_id = str(ctx.channel.id)
+    if channel_id in channels:
+        del channels[channel_id]
+        save_channels()
+        await ctx.send(f"Unbound channel {ctx.channel.mention}")
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+
 # Function to scrape website
 def scrape_website(url):
     try:
@@ -59,45 +106,42 @@ def scrape_website(url):
         logger.error(f'Error: {e}')
         return None, None, None
 
-# Check if user is owner
-def is_owner(ctx):
-    return ctx.author.id in OWNER_IDS
-
-# Event to log commands
-@bot.event
-async def on_command(ctx):
-    logger.info(f"Command '{ctx.command}' ran by user {ctx.author} with ID {ctx.author.id} at {ctx.message.created_at}")
-
 # Command to scrape website
 @bot.command()
 @commands.check(is_owner)
-async def scrape(ctx, url: str):
+async def unchecked(ctx):
     global EMOJI_MODE
-    scraped_data, table_text, game_name = scrape_website(url)
-    if scraped_data is not None and table_text is not None and game_name is not None:
-        if EMOJI_MODE:
-            table = EMOJISPACER1
-        else:
-            table = SPACER1
-        for nation_name, status in scraped_data:
-            if nation_name is None:
-                nation_name = 'Failed to scrape nation name'
+    channel_id = str(ctx.channel.id)
+    if channel_id in channels:
+        url = channels[channel_id]
+        scraped_data, table_text, game_name = scrape_website(url)
+        if scraped_data is not None and table_text is not None and game_name is not None:
             if EMOJI_MODE:
-                status = [f"{EMOJIS.get(cell, '')} {cell}" for cell in status]
-            table += f"| {nation_name:<14} | {', '.join(status):<14} |\n"
-        if EMOJI_MODE:
-            table += EMOJISPACER2
-        else: table += SPACER2
-        output = f"```\n{game_name}\n{table}\n{table_text}\n```"
-        if len(output) > 2000:
-            logger.warning(f"Attempting to send large message, may exceed limits. Message length: {len(output)}")
-            messages = [output[i:i + 2000] for i in range(0, len(output), 2000)]
-            for message in messages:
-                await ctx.send(message)
+                table = EMOJISPACER1
+            else:
+                table = SPACER1
+            for nation_name, status in scraped_data:
+                if nation_name is None:
+                    nation_name = 'Failed to scrape nation name'
+                if EMOJI_MODE:
+                    status = [f"{EMOJIS.get(cell, '')} {cell}" for cell in status]
+                table += f"| {nation_name:<14} | {', '.join(status):<14} |\n"
+            if EMOJI_MODE:
+                table += EMOJISPACER2
+            else:
+                table += SPACER2
+            output = f"```\n{game_name}\n{table}\n{table_text}\n```"
+            if len(output) > 2000:
+                logger.warning(f"Attempting to send large message, may exceed limits. Message length: {len(output)}")
+                messages = [output[i:i + 2000] for i in range(0, len(output), 2000)]
+                for message in messages:
+                    await ctx.send(message)
+            else:
+                await ctx.send(output)
         else:
-            await ctx.send(output)
+            await ctx.send('Failed to scrape website')
     else:
-        await ctx.send('Failed to scrape website')
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
 
 # Command to toggle emoji mode
 @bot.command()
