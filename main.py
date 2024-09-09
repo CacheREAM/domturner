@@ -49,42 +49,46 @@ CHANNELS_FILE = 'channels.json'
 # Load channels from file
 if os.path.exists(CHANNELS_FILE):
     with open(CHANNELS_FILE, 'r') as f:
-        channels = json.load(f)
+        channels_json = json.load(f)
+        channels = {int(channel_id): channel_data for channel_id, channel_data in channels_json.items()}
 else:
     channels = {}
 
 # Function to save channels to file
-def save_channels(channels):
-    for channel_id, channel_data in channels.items():
-        channel_data['nations'] = {nation_name: nation_data for nation_name, nation_data in channel_data['nations'].items() if nation_name is not None}
-        channel_data['unfinished_plus_unsubmitted'] = sum(1 for nation_name, nation_data in channel_data['nations'].items() if 'unfinished' in nation_data['status'] or 'unsubmitted' in nation_data['status'])
+def save_channels(channels_param):
+    channels_param_to_write = {}
+    for channel_id, channel_data in channels_param.items():
+        channel_data_to_write = {
+            'url': channel_data['url'],
+            'nations': {}
+        }
+        for nation_name, nation_data in channel_data['nations'].items():
+            if nation_name is not None:
+                channel_data_to_write['nations'][nation_name] = {
+                    'status': nation_data['status'],
+                    'user': nation_data['user']
+                }
+        channels_param_to_write[str(channel_id)] = channel_data_to_write
     with open(CHANNELS_FILE, 'w') as f:
-        json.dump(channels, f)
-
-# Load channels from file
-if os.path.exists(CHANNELS_FILE):
-    with open(CHANNELS_FILE, 'r') as f:
-        channels = json.load(f)
-else:
-    channels = {}
+        json.dump(channels_param_to_write, f)
 
 # Command to bind a channel to a URL
 @bot.command()
 @commands.check(is_owner)
 async def bind(ctx, url: str):
-    channel_id = str(ctx.channel.id)
+    channel_id = ctx.channel.id
     channels[channel_id] = {'url': url, 'nations': {}}
-    save_channels()
+    save_channels(channels)
     await ctx.send(f"Bound channel {ctx.channel.mention} to URL {url}")
 
 # Command to remove a bound channel
 @bot.command()
 @commands.check(is_owner)
 async def unbind(ctx):
-    channel_id = str(ctx.channel.id)
+    channel_id = ctx.channel.id
     if channel_id in channels:
         del channels[channel_id]
-        save_channels()
+        save_channels(channels)
         await ctx.send(f"Unbound channel {ctx.channel.mention}")
     else:
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
@@ -120,16 +124,15 @@ def scrape_website(url):
 
 # Command to scrape website
 @bot.command()
-@commands.check(is_owner)
 async def unchecked(ctx):
     global EMOJI_MODE
-    channel_id = str(ctx.channel.id)
+    channel_id = ctx.channel.id
     if channel_id in channels:
         url = channels[channel_id]['url']
         scraped_data, table_text, game_name, nations_data = scrape_website(url)
         if scraped_data is not None and table_text is not None and game_name is not None:
             channels[channel_id]['nations'] = nations_data
-            save_channels()
+            save_channels(channels)
             if EMOJI_MODE:
                 table = EMOJISPACER1
             else:
@@ -161,11 +164,11 @@ async def unchecked(ctx):
 @bot.command()
 @commands.check(is_owner)
 async def addnation(ctx, nation_name: str, user: discord.Member):
-    channel_id = str(ctx.channel.id)
+    channel_id = ctx.channel.id
     if channel_id in channels:
         if nation_name in channels[channel_id]['nations']:
             channels[channel_id]['nations'][nation_name]['user'] = str(user.id)
-            save_channels()
+            save_channels(channels)
             await ctx.send(f"Added nation {nation_name} to user {user.mention}")
         else:
             await ctx.send(f"Nation {nation_name} not found in channel {ctx.channel.mention}")
