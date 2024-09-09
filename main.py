@@ -54,16 +54,26 @@ else:
     channels = {}
 
 # Function to save channels to file
-def save_channels():
+def save_channels(channels):
+    for channel_id, channel_data in channels.items():
+        channel_data['nations'] = {nation_name: nation_data for nation_name, nation_data in channel_data['nations'].items() if nation_name is not None}
+        channel_data['unfinished_plus_unsubmitted'] = sum(1 for nation_name, nation_data in channel_data['nations'].items() if 'unfinished' in nation_data['status'] or 'unsubmitted' in nation_data['status'])
     with open(CHANNELS_FILE, 'w') as f:
         json.dump(channels, f)
+
+# Load channels from file
+if os.path.exists(CHANNELS_FILE):
+    with open(CHANNELS_FILE, 'r') as f:
+        channels = json.load(f)
+else:
+    channels = {}
 
 # Command to bind a channel to a URL
 @bot.command()
 @commands.check(is_owner)
 async def bind(ctx, url: str):
     channel_id = str(ctx.channel.id)
-    channels[channel_id] = url
+    channels[channel_id] = {'url': url, 'nations': {}}
     save_channels()
     await ctx.send(f"Bound channel {ctx.channel.mention} to URL {url}")
 
@@ -87,11 +97,13 @@ def scrape_website(url):
         soup = BeautifulSoup(response.text, 'html.parser')
         nation_name_cells = soup.find_all('td', class_='nation-name wide-column')
         scraped_data = []
+        nations_data = {}
         for cell in nation_name_cells:
             nation_name = cell.find('b').text.strip() if cell.find('b') else None
             status_cells = cell.parent.find_all('td', class_=lambda x: x in ['submitted', 'unsubmitted', 'unfinished', 'computer', 'dead'])
             status = [cell.text.strip() for cell in status_cells]
             scraped_data.append((nation_name, status))
+            nations_data[nation_name] = {'status': status, 'user': None}
         # Get the text from the striped-table inside the pane status div
         striped_table = soup.find('div', class_='pane status').find('table', class_='striped-table')
         table_text = ''
@@ -101,10 +113,10 @@ def scrape_website(url):
                 table_text += cell.text.strip() + '\n'
         # Get the game name
         game_name = soup.find('h1').text.strip()
-        return scraped_data, table_text, game_name
+        return scraped_data, table_text, game_name, nations_data
     except Exception as e:
         logger.error(f'Error: {e}')
-        return None, None, None
+        return None, None, None, None
 
 # Command to scrape website
 @bot.command()
@@ -113,9 +125,11 @@ async def unchecked(ctx):
     global EMOJI_MODE
     channel_id = str(ctx.channel.id)
     if channel_id in channels:
-        url = channels[channel_id]
-        scraped_data, table_text, game_name = scrape_website(url)
+        url = channels[channel_id]['url']
+        scraped_data, table_text, game_name, nations_data = scrape_website(url)
         if scraped_data is not None and table_text is not None and game_name is not None:
+            channels[channel_id]['nations'] = nations_data
+            save_channels()
             if EMOJI_MODE:
                 table = EMOJISPACER1
             else:
@@ -140,6 +154,21 @@ async def unchecked(ctx):
                 await ctx.send(output)
         else:
             await ctx.send('Failed to scrape website')
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+
+# Command to add a nation to a user
+@bot.command()
+@commands.check(is_owner)
+async def addnation(ctx, nation_name: str, user: discord.Member):
+    channel_id = str(ctx.channel.id)
+    if channel_id in channels:
+        if nation_name in channels[channel_id]['nations']:
+            channels[channel_id]['nations'][nation_name]['user'] = str(user.id)
+            save_channels()
+            await ctx.send(f"Added nation {nation_name} to user {user.mention}")
+        else:
+            await ctx.send(f"Nation {nation_name} not found in channel {ctx.channel.mention}")
     else:
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
 
