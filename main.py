@@ -61,7 +61,10 @@ def load_channels():
                     channel_data['options'] = {
                         'minutes_per_check': 15,  # Default value
                         'current_turn': 0,  # Default value
-                        'min_unready_before_warn': 5  # Default value
+                        'min_unready_before_warn': 1,  # Default value
+                        'warned_unready': False,  # Default value
+                        'warned_timeleft': False,  # Default value
+                        'min_time_before_warn': 60  # Default value
                     }
                 channels[int(channel_id)] = channel_data
             return channels
@@ -93,7 +96,10 @@ def save_channels(channels_param):
                 channel_data_to_write['options'] = {
                     'minutes_per_check': channel_data['options']['minutes_per_check'],
                     'current_turn': channel_data['options']['current_turn'],
-                    'min_unready_before_warn': channel_data['options']['min_unready_before_warn']
+                    'min_unready_before_warn': channel_data['options']['min_unready_before_warn'],
+                    'warned_unready': channel_data['options']['warned_unready'],
+                    'warned_timeleft': channel_data['options']['warned_timeleft'],
+                    'min_time_before_warn': channel_data['options']['min_time_before_warn']
                 }
             for nation_name, nation_data in channel_data['nations'].items():
                 if nation_name is not None:
@@ -106,6 +112,8 @@ def save_channels(channels_param):
             json.dump(channels_param_to_write, f)
     except Exception as e:
         logger.error(f"Error saving channels: {e}")
+
+
 
 # Command to bind a channel to a URL
 @bot.command()
