@@ -46,40 +46,75 @@ async def on_command(ctx):
 # Channels file name
 CHANNELS_FILE = 'channels.json'
 
+def load_channels():
+    try:
+        with open(CHANNELS_FILE, 'r') as f:
+            channels_json = json.load(f)
+            channels = {}
+            for channel_id, channel_data in channels_json.items():
+                # Validate channel data
+                if 'url' not in channel_data or 'nations' not in channel_data:
+                    logging.warning(f"Invalid channel data for channel {channel_id}: {channel_data}")
+                    continue
+                channel_data['nations'] = {nation_name: nation_data for nation_name, nation_data in channel_data['nations'].items() if nation_name is not None}
+                if 'options' not in channel_data:
+                    channel_data['options'] = {
+                        'minutes_per_check': 15,  # Default value
+                        'current_turn': 0,  # Default value
+                        'min_unready_before_warn': 5  # Default value
+                    }
+                channels[int(channel_id)] = channel_data
+            return channels
+    except json.JSONDecodeError as e:
+        logging.error(f"Error loading channels: {e}")
+        return {}
+
 # Load channels from file
 if os.path.exists(CHANNELS_FILE):
-    with open(CHANNELS_FILE, 'r') as f:
-        channels_json = json.load(f)
-        channels = {int(channel_id): channel_data for channel_id, channel_data in channels_json.items()}
+    channels = load_channels()
 else:
     channels = {}
 
 # Function to save channels to file
 def save_channels(channels_param):
-    channels_param_to_write = {}
-    for channel_id, channel_data in channels_param.items():
-        channel_data_to_write = {
-            'url': channel_data['url'],
-            'nations': {}
-        }
-        for nation_name, nation_data in channel_data['nations'].items():
-            if nation_name is not None:
-                channel_data_to_write['nations'][nation_name] = {
-                    'status': nation_data['status'],
-                    'user': nation_data['user']
+    try:
+        channels_param_to_write = {}
+        for channel_id, channel_data in channels_param.items():
+            # Validate channel data before saving
+            if 'url' not in channel_data or 'nations' not in channel_data:
+                logger.warning(f"Invalid channel data for channel {channel_id}: {channel_data}")
+                continue
+            channel_data_to_write = {
+                'url': channel_data['url'],
+                'role': channel_data.get('role', None),
+                'nations': {}
+            }
+            if 'options' in channel_data:
+                channel_data_to_write['options'] = {
+                    'minutes_per_check': channel_data['options']['minutes_per_check'],
+                    'current_turn': channel_data['options']['current_turn'],
+                    'min_unready_before_warn': channel_data['options']['min_unready_before_warn']
                 }
-        channels_param_to_write[str(channel_id)] = channel_data_to_write
-    with open(CHANNELS_FILE, 'w') as f:
-        json.dump(channels_param_to_write, f)
+            for nation_name, nation_data in channel_data['nations'].items():
+                if nation_name is not None:
+                    channel_data_to_write['nations'][nation_name] = {
+                        'status': nation_data['status'],
+                        'user': nation_data['user']
+                    }
+            channels_param_to_write[str(channel_id)] = channel_data_to_write
+        with open(CHANNELS_FILE, 'w') as f:
+            json.dump(channels_param_to_write, f)
+    except Exception as e:
+        logger.error(f"Error saving channels: {e}")
 
 # Command to bind a channel to a URL
 @bot.command()
 @commands.check(is_owner)
-async def bind(ctx, url: str):
+async def bind(ctx, url: str, role: discord.Role):
     channel_id = ctx.channel.id
-    channels[channel_id] = {'url': url, 'nations': {}}
+    channels[channel_id] = {'url': url, 'nations': {}, 'role': str(role.id)}
     save_channels(channels)
-    await ctx.send(f"Bound channel {ctx.channel.mention} to URL {url}")
+    await ctx.send(f"Bound channel {ctx.channel.mention} to URL {url} with role {role.mention}")
 
 # Command to remove a bound channel
 @bot.command()
