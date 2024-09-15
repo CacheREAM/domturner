@@ -8,6 +8,11 @@ logger = get_logger()
 CHANNELS_FILE = 'channels.json'
 
 
+if not os.path.exists(CHANNELS_FILE):
+    with open(CHANNELS_FILE, 'w') as f:
+        json.dump({}, f)
+
+
 def load_channels():
     try:
         with open(CHANNELS_FILE, 'r') as f:
@@ -69,10 +74,3 @@ def save_channels(channels_param):
             json.dump(channels_param_to_write, f)
     except Exception as e:
         logger.error(f"Error saving channels: {e}")
-
-
-# Init
-if os.path.exists(CHANNELS_FILE):
-    channels = load_channels()
-else:
-    channels = {}
