@@ -39,8 +39,12 @@ def load_channels():
                         'min_unready_before_warn': 1,  # Default value
                         'warned_unready': False,  # Default value
                         'warned_timeleft': False,  # Default value
-                        'min_time_before_warn': 60  # Default value
+                        'min_time_before_warn': 60,  # Default value
+                        'emoji_mode': True  # Default value
                     }
+                elif 'emoji_mode' not in channel_data['options']:
+                    # Default value
+                    channel_data['options']['emoji_mode'] = False
                 channels[int(channel_id)] = channel_data
             return channels
     except json.JSONDecodeError as e:
@@ -68,7 +72,8 @@ def save_channels(channels_param):
                     'min_unready_before_warn': channel_data['options']['min_unready_before_warn'],
                     'warned_unready': channel_data['options']['warned_unready'],
                     'warned_timeleft': channel_data['options']['warned_timeleft'],
-                    'min_time_before_warn': channel_data['options']['min_time_before_warn']
+                    'min_time_before_warn': channel_data['options']['min_time_before_warn'],
+                    'emoji_mode': channel_data['options'].get('emoji_mode', False)
                 }
             for nation_id, nation_data in channel_data['nations'].items():
                 channel_data_to_write['nations'][nation_id] = {
