@@ -1,5 +1,8 @@
 from config import TOKEN
-import os
+from logger import get_logger
+from commands import bot
+
+logger = get_logger()
 
 
 # Event to log commands

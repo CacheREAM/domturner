@@ -1,9 +1,13 @@
-from utils.py import is_owner, scrape_website
+from utils import is_owner, scrape_website
 from discord.ext import commands
 import discord
-import json
-import os
+from database import load_channels, save_channels
+from config import SPACER1, SPACER2, EMOJISPACER1, EMOJISPACER2, EMOJIS
+from logger import get_logger
 
+logger = get_logger()
+
+channels = load_channels()
 
 intents = discord.Intents.default()
 intents.typing = False  # Optional: set to True if your bot needs to detect typing status
@@ -14,8 +18,6 @@ intents.message_content = True  # Required to read and send messages
 
 bot = commands.Bot(command_prefix='?', intents=intents)
 
-# Command to bind a channel to a URL
-
 
 @bot.command()
 @commands.check(is_owner)
@@ -24,8 +26,6 @@ async def bind(ctx, url: str, role: discord.Role):
     channels[channel_id] = {'url': url, 'nations': {}, 'role': str(role.id)}
     save_channels(channels)
     await ctx.send(f"Bound channel {ctx.channel.mention} to URL {url} with role {role.mention}")
-
-# Command to remove a bound channel
 
 
 @bot.command()
@@ -40,7 +40,6 @@ async def unbind(ctx):
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
 
 
-# Command to scrape website
 @bot.command()
 async def unchecked(ctx):
     global EMOJI_MODE
@@ -81,8 +80,6 @@ async def unchecked(ctx):
     else:
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
 
-# Command to add a nation to a user
-
 
 @bot.command()
 @commands.check(is_owner)
@@ -98,9 +95,8 @@ async def addnation(ctx, nation_name: str, user: discord.Member):
     else:
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
 
-# Command to toggle emoji mode
 
-
+# deprecated
 @bot.command()
 @commands.check(is_owner)
 async def emojimode(ctx):

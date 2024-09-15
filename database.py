@@ -7,12 +7,6 @@ logger = get_logger()
 # Channels file name
 CHANNELS_FILE = 'channels.json'
 
-# Load channels from file
-if os.path.exists(CHANNELS_FILE):
-    channels = load_channels()
-else:
-    channels = {}
-
 
 def load_channels():
     try:
@@ -20,10 +14,9 @@ def load_channels():
             channels_json = json.load(f)
             channels = {}
             for channel_id, channel_data in channels_json.items():
-                # Validate channel data
                 if 'url' not in channel_data or 'nations' not in channel_data:
                     logger.warning(f"Invalid channel data for channel {
-                        channel_id}: {channel_data}")
+                                   channel_id}: {channel_data}")
                     continue
                 channel_data['nations'] = {nation_name: nation_data for nation_name,
                                            nation_data in channel_data['nations'].items() if nation_name is not None}
@@ -43,14 +36,10 @@ def load_channels():
         return {}
 
 
-# Function to save channels to file
-
-
 def save_channels(channels_param):
     try:
         channels_param_to_write = {}
         for channel_id, channel_data in channels_param.items():
-            # Validate channel data before saving
             if 'url' not in channel_data or 'nations' not in channel_data:
                 logger.warning(f"Invalid channel data for channel {
                                channel_id}: {channel_data}")
@@ -80,3 +69,10 @@ def save_channels(channels_param):
             json.dump(channels_param_to_write, f)
     except Exception as e:
         logger.error(f"Error saving channels: {e}")
+
+
+# Init
+if os.path.exists(CHANNELS_FILE):
+    channels = load_channels()
+else:
+    channels = {}
