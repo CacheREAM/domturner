@@ -23,8 +23,15 @@ def load_channels():
                     logger.warning(f"Invalid channel data for channel {
                                    channel_id}: {channel_data}")
                     continue
-                channel_data['nations'] = {nation_name: nation_data for nation_name,
-                                           nation_data in channel_data['nations'].items() if nation_name is not None}
+                channel_data['nations'] = {}
+                nation_id = 1
+                for nation in channel_data['nations'].values():
+                    channel_data['nations'][nation_id] = {
+                        'name': nation['name'],
+                        'status': nation['status'],
+                        'user': nation['user']
+                    }
+                    nation_id += 1
                 if 'options' not in channel_data:
                     channel_data['options'] = {
                         'minutes_per_check': 15,  # Default value
@@ -63,12 +70,12 @@ def save_channels(channels_param):
                     'warned_timeleft': channel_data['options']['warned_timeleft'],
                     'min_time_before_warn': channel_data['options']['min_time_before_warn']
                 }
-            for nation_name, nation_data in channel_data['nations'].items():
-                if nation_name is not None:
-                    channel_data_to_write['nations'][nation_name] = {
-                        'status': nation_data['status'],
-                        'user': nation_data['user']
-                    }
+            for nation_id, nation_data in channel_data['nations'].items():
+                channel_data_to_write['nations'][nation_id] = {
+                    'name': nation_data['name'],
+                    'status': nation_data['status'],
+                    'user': nation_data['user']
+                }
             channels_param_to_write[str(channel_id)] = channel_data_to_write
         with open(CHANNELS_FILE, 'w') as f:
             json.dump(channels_param_to_write, f)
