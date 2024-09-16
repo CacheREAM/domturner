@@ -42,7 +42,8 @@ async def bind(ctx, url: str, role: discord.Role = None):
             'warned_unready': False,
             'warned_timeleft': False,
             'min_time_before_warn': 60,
-            'emoji_mode': True
+            'emoji_mode': True,
+            'autocheck': False
         }
     }
     save_channels(channels)
