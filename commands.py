@@ -220,7 +220,8 @@ async def view_options(ctx):
             options['min_unready_before_warn']}\n"
         output += f"Minimum time before warn: {
             options['min_time_before_warn']}\n"
-        output += f"Emoji mode: {'on' if options['emoji_mode'] else 'off'}"
+        output += f"Emoji mode: {'on' if options['emoji_mode'] else 'off'}\n"
+        output += f"Autocheck: {'on' if options['autocheck'] else 'off'}"
         await ctx.author.send(f"Options for channel {ctx.channel.mention}:\n{output}")
     else:
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
