@@ -53,7 +53,7 @@ def save_channels(channels_param):
         }
         if 'emoji_mode' not in channel_data_to_write['options']:
             channel_data_to_write['options']['emoji_mode'] = True
-        channels_to_write[str(channel_id)] = channel_data_to_write
+        channels_to_write[channel_id] = channel_data_to_write
     try:
         with open(CHANNELS_FILE, 'w') as f:
             json.dump(channels_to_write, f)

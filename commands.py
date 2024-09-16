@@ -10,22 +10,31 @@ logger = get_logger()
 channels = load_channels()
 
 intents = discord.Intents.default()
-intents.typing = False  # Optional: set to True if your bot needs to detect typing status
-# Optional: set to True if your bot needs to detect presence status
+intents.typing = False
 intents.presences = False
-intents.members = True  # Required for server members intent
-intents.message_content = True  # Required to read and send messages
+intents.members = True
+intents.message_content = True
+intents.guilds = True  # Required to cache guilds, needed for role mentions
+intents.bans = False  # Optional
+intents.emojis = True  # Optional
+intents.integrations = False  # Optional
+intents.invites = False  # Optional
+intents.voice_states = False  # Optional
+intents.reactions = True  # Required to cache messages and reactions
+intents.messages = True  # Optional, enables cache for messages
+intents.emojis_and_stickers = True  # Required for emoji and sticker intents
 
 bot = commands.Bot(command_prefix='?', intents=intents)
 
 
 @bot.command()
 @commands.check(is_owner)
-async def bind(ctx, url: str, role: discord.Role):
+async def bind(ctx, url: str, role: discord.Role = None):
     channel_id = ctx.channel.id
-    channels[channel_id] = {'url': url, 'nations': {}, 'role': str(role.id)}
+    channels[channel_id] = {'url': url, 'nations': {},
+                            'role': str(role.id) if role else None}
     save_channels(channels)
-    await ctx.send(f"Bound channel {ctx.channel.mention} to URL {url} with role {role.mention}")
+    await ctx.send(f"Bound channel {ctx.channel.mention} to URL {url}{' with role ' + role.mention if role else ''}")
 
 
 @bot.command()
@@ -42,7 +51,6 @@ async def unbind(ctx):
 
 @bot.command()
 async def unchecked(ctx):
-    global EMOJI_MODE
     channel_id = ctx.channel.id
     if channel_id in channels:
         url = channels[channel_id]['url']
@@ -50,19 +58,19 @@ async def unchecked(ctx):
         if scraped_data is not None and table_text is not None and game_name is not None:
             channels[channel_id]['nations'] = nations_data
             save_channels(channels)
-            if EMOJI_MODE:
+            if channels[channel_id]['options']['emoji_mode']:
                 table = EMOJISPACER1
             else:
                 table = SPACER1
             for nation_id, nation_name, status in scraped_data:
                 if nation_name is None:
                     nation_name = 'Failed to scrape nation name'
-                if EMOJI_MODE:
+                if channels[channel_id]['options']['emoji_mode']:
                     status = [f"{EMOJIS.get(cell, '')} {
                         cell}" for cell in status]
                 table += f"| {nation_id:<4} | {
                     nation_name:<14} | {', '.join(status):<14} |\n"
-            if EMOJI_MODE:
+            if channels[channel_id]['options']['emoji_mode']:
                 table += EMOJISPACER2
             else:
                 table += SPACER2
