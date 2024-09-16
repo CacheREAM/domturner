@@ -41,18 +41,16 @@ def save_channels(channels_param):
             'url': channel_data['url'],
             'role': channel_data.get('role', None),
             'nations': channel_data['nations'],
-            'options': channel_data.get('options', {
-                'minutes_per_check': 15,
-                'current_turn': 0,
-                'min_unready_before_warn': 1,
-                'warned_unready': False,
-                'warned_timeleft': False,
-                'min_time_before_warn': 60,
-                'emoji_mode': True
-            })
+            'options': {
+                'minutes_per_check': channel_data.get('minutes_per_check', 15),
+                'current_turn': channel_data.get('current_turn', 0),
+                'min_unready_before_warn': channel_data.get('min_unready_before_warn', 1),
+                'warned_unready': channel_data.get('warned_unready', False),
+                'warned_timeleft': channel_data.get('warned_timeleft', False),
+                'min_time_before_warn': channel_data.get('min_time_before_warn', 60),
+                'emoji_mode': channel_data.get('options', {}).get('emoji_mode', True)
+            }
         }
-        if 'emoji_mode' not in channel_data_to_write['options']:
-            channel_data_to_write['options']['emoji_mode'] = True
         channels_to_write[channel_id] = channel_data_to_write
     try:
         with open(CHANNELS_FILE, 'w') as f:
