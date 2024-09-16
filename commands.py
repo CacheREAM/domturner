@@ -78,7 +78,8 @@ async def unchecked(ctx):
                     if channels[channel_id]['options']['emoji_mode']:
                         status = [f"{EMOJIS.get(cell, '')} {
                             cell}" for cell in status]
-                    table += f"| {'':<4} | {nation_info['name']                                            :<14} | {', '.join(status):<14} |\n"
+                    table += f"| {nation_id:<4} | {
+                        nation_info['name']:<14} | {', '.join(status):<14} |\n"
                 if channel_data['options']['emoji_mode']:
                     table += EMOJISPACER2
                 else:
