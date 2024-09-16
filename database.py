@@ -23,28 +23,6 @@ def load_channels():
                     logger.warning(f"Invalid channel data for channel {
                                    channel_id}: {channel_data}")
                     continue
-                channel_data['nations'] = {}
-                nation_id = 1
-                for nation in channel_data['nations'].values():
-                    channel_data['nations'][nation_id] = {
-                        'name': nation['name'],
-                        'status': nation['status'],
-                        'user': nation['user']
-                    }
-                    nation_id += 1
-                if 'options' not in channel_data:
-                    channel_data['options'] = {
-                        'minutes_per_check': 15,  # Default value
-                        'current_turn': 0,  # Default value
-                        'min_unready_before_warn': 1,  # Default value
-                        'warned_unready': False,  # Default value
-                        'warned_timeleft': False,  # Default value
-                        'min_time_before_warn': 60,  # Default value
-                        'emoji_mode': True  # Default value
-                    }
-                elif 'emoji_mode' not in channel_data['options']:
-                    # Default value
-                    channel_data['options']['emoji_mode'] = False
                 channels[int(channel_id)] = channel_data
             return channels
     except json.JSONDecodeError as e:
@@ -53,36 +31,31 @@ def load_channels():
 
 
 def save_channels(channels_param):
+    channels_to_write = {}
+    for channel_id, channel_data in channels_param.items():
+        if 'url' not in channel_data or 'nations' not in channel_data:
+            logger.warning(f"Invalid channel data for channel {
+                           channel_id}: {channel_data}")
+            continue
+        channel_data_to_write = {
+            'url': channel_data['url'],
+            'role': channel_data.get('role', None),
+            'nations': channel_data['nations'],
+            'options': channel_data.get('options', {
+                'minutes_per_check': 15,
+                'current_turn': 0,
+                'min_unready_before_warn': 1,
+                'warned_unready': False,
+                'warned_timeleft': False,
+                'min_time_before_warn': 60,
+                'emoji_mode': True
+            })
+        }
+        if 'emoji_mode' not in channel_data_to_write['options']:
+            channel_data_to_write['options']['emoji_mode'] = True
+        channels_to_write[str(channel_id)] = channel_data_to_write
     try:
-        channels_param_to_write = {}
-        for channel_id, channel_data in channels_param.items():
-            if 'url' not in channel_data or 'nations' not in channel_data:
-                logger.warning(f"Invalid channel data for channel {
-                               channel_id}: {channel_data}")
-                continue
-            channel_data_to_write = {
-                'url': channel_data['url'],
-                'role': channel_data.get('role', None),
-                'nations': {}
-            }
-            if 'options' in channel_data:
-                channel_data_to_write['options'] = {
-                    'minutes_per_check': channel_data['options']['minutes_per_check'],
-                    'current_turn': channel_data['options']['current_turn'],
-                    'min_unready_before_warn': channel_data['options']['min_unready_before_warn'],
-                    'warned_unready': channel_data['options']['warned_unready'],
-                    'warned_timeleft': channel_data['options']['warned_timeleft'],
-                    'min_time_before_warn': channel_data['options']['min_time_before_warn'],
-                    'emoji_mode': channel_data['options'].get('emoji_mode', False)
-                }
-            for nation_id, nation_data in channel_data['nations'].items():
-                channel_data_to_write['nations'][nation_id] = {
-                    'name': nation_data['name'],
-                    'status': nation_data['status'],
-                    'user': nation_data['user']
-                }
-            channels_param_to_write[str(channel_id)] = channel_data_to_write
         with open(CHANNELS_FILE, 'w') as f:
-            json.dump(channels_param_to_write, f)
+            json.dump(channels_to_write, f)
     except Exception as e:
         logger.error(f"Error saving channels: {e}")
