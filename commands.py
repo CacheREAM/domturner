@@ -31,8 +31,20 @@ bot = commands.Bot(command_prefix='?', intents=intents)
 @commands.check(is_owner)
 async def bind(ctx, url: str, role: discord.Role = None):
     channel_id = ctx.channel.id
-    channels[channel_id] = {'url': url, 'nations': {},
-                            'role': str(role.id) if role else None}
+    channels[channel_id] = {
+        'url': url,
+        'nations': {},
+        'role': str(role.id) if role else None,
+        'options': {
+            'minutes_per_check': 15,
+            'current_turn': 0,
+            'min_unready_before_warn': 1,
+            'warned_unready': False,
+            'warned_timeleft': False,
+            'min_time_before_warn': 60,
+            'emoji_mode': True
+        }
+    }
     save_channels(channels)
     await ctx.send(f"Bound channel {ctx.channel.mention} to URL {url}{' with role ' + role.mention if role else ''}")
 
@@ -53,37 +65,55 @@ async def unbind(ctx):
 async def unchecked(ctx):
     channel_id = ctx.channel.id
     if channel_id in channels:
+        channel_data = channels[channel_id]
+        print(channel_data)  # Add this line
+        if 'nations' in channel_data:
+            nations_data = channel_data['nations']
+            if len(nations_data) > 0:
+                if channel_data['options']['emoji_mode']:
+                    table = EMOJISPACER1
+                else:
+                    table = SPACER1
+                for nation_name, nation_info in nations_data.items():
+                    status = nation_info['status']
+                    if channels[channel_id]['options']['emoji_mode']:
+                        status = [f"{EMOJIS.get(cell, '')} {
+                            cell}" for cell in status]
+                    table += f"| {'':<4} | {nation_name:<14} | {
+                        ', '.join(status):<14} |\n"
+                if channel_data['options']['emoji_mode']:
+                    table += EMOJISPACER2
+                else:
+                    table += SPACER2
+                output = f"```\n{table}\n```"
+                if len(output) > 2000:
+                    logger.warning(
+                        f"Attempting to send large message, may exceed limits. Message length: {len(output)}")
+                    messages = [output[i:i + 2000]
+                                for i in range(0, len(output), 2000)]
+                    for message in messages:
+                        await ctx.send(message)
+                else:
+                    await ctx.send(output)
+            else:
+                await ctx.send('No nation data available')
+        else:
+            await ctx.send('No nation data available')
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+
+
+@bot.command()
+@commands.check(is_owner)
+async def forcescrape(ctx):
+    channel_id = ctx.channel.id
+    if channel_id in channels:
         url = channels[channel_id]['url']
         scraped_data, table_text, game_name, nations_data = scrape_website(url)
         if scraped_data is not None and table_text is not None and game_name is not None:
             channels[channel_id]['nations'] = nations_data
             save_channels(channels)
-            if channels[channel_id]['options']['emoji_mode']:
-                table = EMOJISPACER1
-            else:
-                table = SPACER1
-            for nation_id, nation_name, status in scraped_data:
-                if nation_name is None:
-                    nation_name = 'Failed to scrape nation name'
-                if channels[channel_id]['options']['emoji_mode']:
-                    status = [f"{EMOJIS.get(cell, '')} {
-                        cell}" for cell in status]
-                table += f"| {nation_id:<4} | {
-                    nation_name:<14} | {', '.join(status):<14} |\n"
-            if channels[channel_id]['options']['emoji_mode']:
-                table += EMOJISPACER2
-            else:
-                table += SPACER2
-            output = f"```\n{game_name}\n{table}\n{table_text}\n```"
-            if len(output) > 2000:
-                logger.warning(
-                    f"Attempting to send large message, may exceed limits. Message length: {len(output)}")
-                messages = [output[i:i + 2000]
-                            for i in range(0, len(output), 2000)]
-                for message in messages:
-                    await ctx.send(message)
-            else:
-                await ctx.send(output)
+            await ctx.send(f"Scraped website and updated nation data for channel {ctx.channel.mention}")
         else:
             await ctx.send('Failed to scrape website')
     else:
