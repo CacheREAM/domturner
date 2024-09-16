@@ -66,7 +66,6 @@ async def unchecked(ctx):
     channel_id = ctx.channel.id
     if channel_id in channels:
         channel_data = channels[channel_id]
-        print(channel_data)  # Add this line
         if 'nations' in channel_data:
             nations_data = channel_data['nations']
             if len(nations_data) > 0:
@@ -74,13 +73,12 @@ async def unchecked(ctx):
                     table = EMOJISPACER1
                 else:
                     table = SPACER1
-                for nation_name, nation_info in nations_data.items():
+                for nation_id, nation_info in nations_data.items():
                     status = nation_info['status']
                     if channels[channel_id]['options']['emoji_mode']:
                         status = [f"{EMOJIS.get(cell, '')} {
                             cell}" for cell in status]
-                    table += f"| {'':<4} | {nation_name:<14} | {
-                        ', '.join(status):<14} |\n"
+                    table += f"| {'':<4} | {nation_info['name']                                            :<14} | {', '.join(status):<14} |\n"
                 if channel_data['options']['emoji_mode']:
                     table += EMOJISPACER2
                 else:
@@ -111,7 +109,17 @@ async def forcescrape(ctx):
         url = channels[channel_id]['url']
         scraped_data, table_text, game_name, nations_data = scrape_website(url)
         if scraped_data is not None and table_text is not None and game_name is not None:
-            channels[channel_id]['nations'] = nations_data
+            channels[channel_id]['nations'] = {}
+            nation_id = 1
+            for nation in scraped_data:
+                nation_name = nation[0]
+                status = nation[1]
+                channels[channel_id]['nations'][str(nation_id)] = {
+                    'name': nation_name,
+                    'status': status,
+                    'user': None
+                }
+                nation_id += 1
             save_channels(channels)
             await ctx.send(f"Scraped website and updated nation data for channel {ctx.channel.mention}")
         else:

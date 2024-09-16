@@ -22,6 +22,7 @@ def scrape_website(url):
             'td', class_='nation-name wide-column')
         scraped_data = []
         nations_data = {}
+        nation_id = 1
         for cell in nation_name_cells:
             nation_name = cell.find(
                 'b').text.strip() if cell.find('b') else None
@@ -29,7 +30,12 @@ def scrape_website(url):
                                                 'submitted', 'unsubmitted', 'unfinished', 'computer', 'dead'])
             status = [cell.text.strip() for cell in status_cells]
             scraped_data.append((nation_name, status))
-            nations_data[nation_name] = {'status': status, 'user': None}
+            nations_data[str(nation_id)] = {
+                'name': nation_name,
+                'status': status,
+                'user': None
+            }
+            nation_id += 1
         # Get the text from the striped-table inside the pane status div
         striped_table = soup.find('div', class_='pane status').find(
             'table', class_='striped-table')

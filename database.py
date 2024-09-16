@@ -24,7 +24,15 @@ def load_channels():
                                    channel_id}: {channel_data}")
                     continue
                 channel_data['options'] = channel_data.get('options', {})
-                channels[int(channel_id)] = channel_data
+                nations = {}
+                for nation_id, nation_data in channel_data['nations'].items():
+                    nations[int(nation_id)] = nation_data
+                channels[int(channel_id)] = {
+                    'url': channel_data['url'],
+                    'role': channel_data.get('role', None),
+                    'nations': nations,
+                    'options': channel_data.get('options', {})
+                }
             return channels
     except json.JSONDecodeError as e:
         logger.error(f"Error loading channels: {e}")
@@ -38,16 +46,13 @@ def save_channels(channels_param):
             logger.warning(f"Invalid channel data for channel {
                            channel_id}: {channel_data}")
             continue
-
         channel_data_to_write = {
             'url': channel_data['url'],
             'role': channel_data.get('role', None),
-            'nations': channel_data['nations'],
+            'nations': {str(nation_id): nation_data for nation_id, nation_data in channel_data['nations'].items()},
             'options': channel_data.get('options', {})
         }
-
         channels_to_write[channel_id] = channel_data_to_write
-
     try:
         with open(CHANNELS_FILE, 'w') as f:
             json.dump(channels_to_write, f)
