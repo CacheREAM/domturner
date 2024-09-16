@@ -1,4 +1,4 @@
-from config import OWNER_IDS
+from keys import OWNER_IDS
 from bs4 import BeautifulSoup
 from logger import get_logger
 import requests

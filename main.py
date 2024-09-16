@@ -1,4 +1,4 @@
-from config import TOKEN
+from keys import TOKEN
 from logger import get_logger
 from commands import bot
 

@@ -54,13 +54,14 @@ async def unchecked(ctx):
                 table = EMOJISPACER1
             else:
                 table = SPACER1
-            for nation_name, status in scraped_data:
+            for nation_id, nation_name, status in scraped_data:
                 if nation_name is None:
                     nation_name = 'Failed to scrape nation name'
                 if EMOJI_MODE:
                     status = [f"{EMOJIS.get(cell, '')} {
                         cell}" for cell in status]
-                table += f"| {nation_name:<14} | {', '.join(status):<14} |\n"
+                table += f"| {nation_id:<4} | {
+                    nation_name:<14} | {', '.join(status):<14} |\n"
             if EMOJI_MODE:
                 table += EMOJISPACER2
             else:
@@ -96,10 +97,79 @@ async def addnation(ctx, nation_name: str, user: discord.Member):
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
 
 
-# deprecated
 @bot.command()
 @commands.check(is_owner)
-async def emojimode(ctx):
-    global EMOJI_MODE
-    EMOJI_MODE = not EMOJI_MODE
-    await ctx.send(f"Emoji mode is now {'enabled' if EMOJI_MODE else 'disabled'}")
+async def set_minutes_per_check(ctx, minutes: int):
+    channel_id = ctx.channel.id
+    if channel_id in channels:
+        channels[channel_id]['options']['minutes_per_check'] = minutes
+        save_channels(channels)
+        await ctx.send(f"Set minutes per check to {minutes} for channel {ctx.channel.mention}")
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+
+
+@bot.command()
+@commands.check(is_owner)
+async def set_current_turn(ctx, turn: int):
+    channel_id = ctx.channel.id
+    if channel_id in channels:
+        channels[channel_id]['options']['current_turn'] = turn
+        save_channels(channels)
+        await ctx.send(f"Set current turn to {turn} for channel {ctx.channel.mention}")
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+
+
+@bot.command()
+@commands.check(is_owner)
+async def set_min_unready_before_warn(ctx, min_unready: int):
+    channel_id = ctx.channel.id
+    if channel_id in channels:
+        channels[channel_id]['options']['min_unready_before_warn'] = min_unready
+        save_channels(channels)
+        await ctx.send(f"Set minimum unready before warn to {min_unready} for channel {ctx.channel.mention}")
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+
+
+@bot.command()
+@commands.check(is_owner)
+async def set_min_time_before_warn(ctx, minutes: int):
+    channel_id = ctx.channel.id
+    if channel_id in channels:
+        channels[channel_id]['options']['min_time_before_warn'] = minutes
+        save_channels(channels)
+        await ctx.send(f"Set minimum time before warn to {minutes} minutes for channel {ctx.channel.mention}")
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+
+
+@bot.command()
+@commands.check(is_owner)
+async def toggle_emoji_mode(ctx):
+    channel_id = ctx.channel.id
+    if channel_id in channels:
+        channels[channel_id]['options']['emoji_mode'] = not channels[channel_id]['options']['emoji_mode']
+        save_channels(channels)
+        await ctx.send(f"Emoji mode is now {'on' if channels[channel_id]['options']['emoji_mode'] else 'off'} for channel {ctx.channel.mention}")
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+
+
+@bot.command()
+@commands.check(is_owner)
+async def view_options(ctx):
+    channel_id = ctx.channel.id
+    if channel_id in channels:
+        options = channels[channel_id]['options']
+        output = f"Minutes per check: {options['minutes_per_check']}\n"
+        output += f"Current turn: {options['current_turn']}\n"
+        output += f"Minimum unready before warn: {
+            options['min_unready_before_warn']}\n"
+        output += f"Minimum time before warn: {
+            options['min_time_before_warn']}\n"
+        output += f"Emoji mode: {'on' if options['emoji_mode'] else 'off'}"
+        await ctx.author.send(f"Options for channel {ctx.channel.mention}:\n{output}")
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
