@@ -131,15 +131,18 @@ async def forcescrape(ctx):
 
 @bot.command()
 @commands.check(is_owner)
-async def addnation(ctx, nation_name: str, user: discord.Member):
+async def addnation(ctx, nation_id: int, user: discord.Member):
     channel_id = ctx.channel.id
     if channel_id in channels:
-        if nation_name in channels[channel_id]['nations']:
-            channels[channel_id]['nations'][nation_name]['user'] = str(user.id)
+        if str(nation_id) in channels[channel_id]['nations']:
+            channels[channel_id]['nations'][str(
+                nation_id)]['user'] = str(user.id)
             save_channels(channels)
+            nation_name = channels[channel_id]['nations'][str(
+                nation_id)]['name']
             await ctx.send(f"Added nation {nation_name} to user {user.mention}")
         else:
-            await ctx.send(f"Nation {nation_name} not found in channel {ctx.channel.mention}")
+            await ctx.send(f"Nation {nation_id} not found in channel {ctx.channel.mention}")
     else:
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
 
