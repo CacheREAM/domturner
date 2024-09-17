@@ -1,12 +1,11 @@
 import asyncio
-from database import load_channels, save_channels
+from database import save_channels
 from logger import get_logger
 from bot import bot
 from utils import scrape_website
+from channels import channels
 
 logger = get_logger()
-
-channels = load_channels()
 
 # Function to handle autocheck for a channel
 

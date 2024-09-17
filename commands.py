@@ -1,15 +1,15 @@
 from utils import is_owner, scrape_website
 from discord.ext import commands
 import discord
-from database import load_channels, save_channels
+from database import save_channels
 from config import SPACER1, SPACER2, EMOJISPACER1, EMOJISPACER2, EMOJIS
 from logger import get_logger
 from autocheck import handle_autocheck
 from bot import bot
+from channels import channels
 
 logger = get_logger()
 
-channels = load_channels()
 
 
 @bot.command()
