@@ -19,7 +19,7 @@ def load_channels():
             channels_json = json.load(f)
             channels = {}
             for channel_id, channel_data in channels_json.items():
-                if 'url' not in channel_data or 'nations' not in channel_data:
+                if 'url' not in channel_data or 'nations' not in channel_data or 'status' not in channel_data or 'address' not in channel_data or 'next_turn' not in channel_data or 'game_name' not in channel_data or 'minutes_left' not in channel_data:
                     logger.warning(f"Invalid channel data for channel {
                                    channel_id}: {channel_data}")
                     continue
@@ -31,7 +31,12 @@ def load_channels():
                     'url': channel_data['url'],
                     'role': channel_data.get('role', None),
                     'nations': nations,
-                    'options': channel_data.get('options', {})
+                    'options': channel_data.get('options', {}),
+                    'status': channel_data['status'],
+                    'address': channel_data['address'],
+                    'next_turn': channel_data['next_turn'],
+                    'game_name': channel_data['game_name'],
+                    'minutes_left': channel_data.get('minutes_left', None)
                 }
             return channels
     except json.JSONDecodeError as e:
@@ -42,7 +47,7 @@ def load_channels():
 def save_channels(channels_param):
     channels_to_write = {}
     for channel_id, channel_data in channels_param.items():
-        if 'url' not in channel_data or 'nations' not in channel_data:
+        if 'url' not in channel_data or 'nations' not in channel_data or 'status' not in channel_data or 'address' not in channel_data or 'next_turn' not in channel_data or 'game_name' not in channel_data or 'minutes_left' not in channel_data:
             logger.warning(f"Invalid channel data for channel {
                            channel_id}: {channel_data}")
             continue
@@ -50,7 +55,12 @@ def save_channels(channels_param):
             'url': channel_data['url'],
             'role': channel_data.get('role', None),
             'nations': {str(nation_id): nation_data for nation_id, nation_data in channel_data['nations'].items()},
-            'options': channel_data.get('options', {})
+            'options': channel_data.get('options', {}),
+            'status': channel_data['status'],
+            'address': channel_data['address'],
+            'next_turn': channel_data['next_turn'],
+            'game_name': channel_data['game_name'],
+            'minutes_left': channel_data['minutes_left']
         }
         channels_to_write[channel_id] = channel_data_to_write
     try:

@@ -2,7 +2,7 @@ from keys import OWNER_IDS
 from bs4 import BeautifulSoup
 from logger import get_logger
 import requests
-
+import re
 
 logger = get_logger()
 
@@ -10,6 +10,20 @@ logger = get_logger()
 # Check if user is owner
 def is_owner(ctx):
     return ctx.author.id in OWNER_IDS
+
+
+def text_to_minutes(text):
+    if text == "On submission":
+        return 999999999  # Return a high number if text is "On submission"
+
+    # Use regular expressions to extract hours and minutes
+    hours_match = re.search(r"(\d+) hours?", text)
+    minutes_match = re.search(r"(\d+) minutes?", text)
+
+    hours = int(hours_match.group(1)) if hours_match else 0
+    minutes = int(minutes_match.group(1)) if minutes_match else 0
+
+    return hours * 60 + minutes
 
 
 def scrape_website(url):
@@ -43,9 +57,13 @@ def scrape_website(url):
             1].text.strip()
         next_turn = striped_table.find_all(
             'tr')[2].find_all('td')[1].text.strip()
+        minutes_left = text_to_minutes(next_turn)
+        # Print status, address, and next_turn variables
+        print(f"Status: {status}, Address: {address}, Next Turn: {
+              next_turn}, Minutes Left: {minutes_left}")
         # Get the game name
         game_name = soup.find('h1').text.strip()
-        return scraped_data, status, address, next_turn, game_name, nations_data
+        return scraped_data, status, address, next_turn, game_name, nations_data, minutes_left
     except Exception as e:
         logger.error(f'Error: {e}')
-        return None, None, None, None, None, None
+        return None, None, None, None, None, None, None
