@@ -26,6 +26,14 @@ def text_to_minutes(text):
     return hours * 60 + minutes
 
 
+def text_to_turn(text):
+    turn_match = re.search(r"(\d+)", text)
+
+    turn = int(turn_match.group(1)) if turn_match else 0
+
+    return turn
+
+
 def scrape_website(url):
     try:
         response = requests.get(url)
@@ -58,12 +66,13 @@ def scrape_website(url):
         next_turn = striped_table.find_all(
             'tr')[2].find_all('td')[1].text.strip()
         minutes_left = text_to_minutes(next_turn)
+        turn = text_to_turn(status)
         # Print status, address, and next_turn variables
         print(f"Status: {status}, Address: {address}, Next Turn: {
-              next_turn}, Minutes Left: {minutes_left}")
+              next_turn}, Minutes Left: {minutes_left}, Turn: {turn}")
         # Get the game name
         game_name = soup.find('h1').text.strip()
-        return scraped_data, status, address, next_turn, game_name, nations_data, minutes_left
+        return scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn
     except Exception as e:
         logger.error(f'Error: {e}')
-        return None, None, None, None, None, None, None
+        return None, None, None, None, None, None, None, None

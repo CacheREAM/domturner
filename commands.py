@@ -11,7 +11,6 @@ from channels import channels
 logger = get_logger()
 
 
-
 @bot.command()
 @commands.check(is_owner)
 async def bind(ctx, url: str, role: discord.Role = None):
@@ -22,8 +21,7 @@ async def bind(ctx, url: str, role: discord.Role = None):
         'role': str(role.id) if role else None,
         'options': {
             'minutes_per_check': 15,
-            'current_turn': 0,
-            'min_unready_before_warn': 1,
+            'min_unready_before_warn': 2,
             'warned_unready': False,
             'warned_timeleft': False,
             'min_time_before_warn': 60,
@@ -94,9 +92,9 @@ async def forcescrape(ctx):
     channel_id = ctx.channel.id
     if channel_id in channels:
         url = channels[channel_id]['url']
-        scraped_data, status, address, next_turn, game_name, nations_data, minutes_left = scrape_website(
+        scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn = scrape_website(
             url)
-        if scraped_data is not None and status is not None and address is not None and next_turn is not None and game_name is not None:
+        if scraped_data is not None and status is not None and address is not None and next_turn is not None and game_name is not None and nations_data is not None and minutes_left is not None and turn is not None:
             channels[channel_id]['nations'] = {
                 str(nation_id): nation_data for nation_id, nation_data in nations_data.items()}
             channels[channel_id]['status'] = status
@@ -104,6 +102,7 @@ async def forcescrape(ctx):
             channels[channel_id]['next_turn'] = next_turn
             channels[channel_id]['game_name'] = game_name
             channels[channel_id]['minutes_left'] = minutes_left
+            channels[channel_id]['turn'] = turn
             save_channels(channels)
             await ctx.send(f"Scraped website and updated nation data for channel {ctx.channel.mention}")
         else:
@@ -138,18 +137,6 @@ async def set_minutes_per_check(ctx, minutes: int):
         channels[channel_id]['options']['minutes_per_check'] = minutes
         save_channels(channels)
         await ctx.send(f"Set minutes per check to {minutes} for channel {ctx.channel.mention}")
-    else:
-        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
-
-
-@bot.command()
-@commands.check(is_owner)
-async def set_current_turn(ctx, turn: int):
-    channel_id = ctx.channel.id
-    if channel_id in channels:
-        channels[channel_id]['options']['current_turn'] = turn
-        save_channels(channels)
-        await ctx.send(f"Set current turn to {turn} for channel {ctx.channel.mention}")
     else:
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
 
@@ -211,7 +198,6 @@ async def view_options(ctx):
     if channel_id in channels:
         options = channels[channel_id]['options']
         output = f"Minutes per check: {options['minutes_per_check']}\n"
-        output += f"Current turn: {options['current_turn']}\n"
         output += f"Minimum unready before warn: {
             options['min_unready_before_warn']}\n"
         output += f"Minimum time before warn: {

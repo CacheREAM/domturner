@@ -13,15 +13,17 @@ logger = get_logger()
 async def handle_autocheck(channel_id):
     channel_data = channels[channel_id]
     url = channel_data['url']
-    scraped_data, status, address, next_turn, game_name, nations_data, minutes_left = scrape_website(
+    scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn = scrape_website(
         url)
-    if scraped_data is not None and status is not None and address is not None and next_turn is not None and game_name is not None:
-        channels[channel_id]['nations'] = nations_data
+    if scraped_data is not None and status is not None and address is not None and next_turn is not None and game_name is not None and nations_data is not None and minutes_left is not None and turn is not None:
+        channels[channel_id]['nations'] = {
+            str(nation_id): nation_data for nation_id, nation_data in nations_data.items()}
         channels[channel_id]['status'] = status
         channels[channel_id]['address'] = address
         channels[channel_id]['next_turn'] = next_turn
         channels[channel_id]['game_name'] = game_name
         channels[channel_id]['minutes_left'] = minutes_left
+        channels[channel_id]['turn'] = turn
         save_channels(channels)
 
         # Get the channel object
@@ -33,13 +35,13 @@ async def handle_autocheck(channel_id):
             role = channel.guild.get_role(int(role_id))
 
         # Check if the current turn is higher than the previous turn
-        if 'previous_turn' not in channel_data or channel_data['previous_turn'] < channel_data['next_turn']:
+        if 'previous_turn' not in channel_data or channel_data['previous_turn'] < channel_data['turn']:
             # Ping the role
             if role:
                 await channel.send(f"{role.mention} New turn!")
             channel_data['warned_timeleft'] = False
             channel_data['warned_unready'] = False
-            channel_data['previous_turn'] = channel_data['next_turn']
+            channel_data['previous_turn'] = channel_data['turn']
 
         # Check if minutes left is lower than the channel's min_time_before_warn
         if not channel_data['options']['warned_timeleft'] and channel_data['minutes_left'] < channel_data['options']['min_time_before_warn']:
@@ -60,7 +62,7 @@ async def handle_autocheck(channel_id):
         if not channel_data['options']['warned_unready'] and unready_nations < channel_data['options']['min_unready_before_warn']:
             # Ping the role
             if role:
-                await channel.send(f"{role.mention} Some nations are not ready!")
+                await channel.send(f"{role.mention} {unready_nations} players are not ready!")
             # Ping the users attached to the nations that are currently unsubmitted and unfinished
             for nation_id, nation_data in channel_data['nations'].items():
                 if nation_data['status'] in ['unsubmitted', 'unfinished']:
