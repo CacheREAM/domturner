@@ -4,6 +4,7 @@ import discord
 from database import load_channels, save_channels
 from config import SPACER1, SPACER2, EMOJISPACER1, EMOJISPACER2, EMOJIS
 from logger import get_logger
+from autocheck import handle_autocheck
 
 logger = get_logger()
 
