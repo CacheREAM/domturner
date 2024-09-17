@@ -34,7 +34,7 @@ def text_to_turn(text):
     return turn
 
 
-def scrape_website(url):
+def scrape_website(url, existing_nations_data=None):
     try:
         response = requests.get(url)
         response.encoding = 'utf-8'  # Set encoding to UTF-8
@@ -51,9 +51,12 @@ def scrape_website(url):
                                                 'submitted', 'unsubmitted', 'unfinished', 'computer', 'dead'])
             status = [cell.text.strip() for cell in status_cells]
             scraped_data.append((nation_name, status))
+            existing_nation_data = existing_nations_data.get(
+                str(nation_id), {}) if existing_nations_data else {}
             nations_data[str(nation_id)] = {
                 'name': nation_name,
-                'status': status[0] if status else None
+                'status': status[0] if status else None,
+                'user': existing_nation_data.get('user')
             }
             nation_id += 1
         # Get the text from the striped-table inside the pane status div

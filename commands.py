@@ -102,13 +102,11 @@ async def forcescrape(ctx):
     channel_id = ctx.channel.id
     if channel_id in channels:
         url = channels[channel_id]['url']
-        scraped_data, status, address, next_turn, game_name, new_nations_data, minutes_left, turn = scrape_website(
-            url)
-        if scraped_data is not None and status is not None and address is not None and next_turn is not None and game_name is not None and new_nations_data is not None and minutes_left is not None and turn is not None:
-            existing_nations_data = channels[channel_id].get('nations', {})
-            new_nations_data = {nation_id: {**existing_nations_data.get(
-                nation_id, {}), **nation_data} for nation_id, nation_data in new_nations_data.items()}
-            channels[channel_id]['nations'] = new_nations_data
+        existing_nations_data = channels[channel_id].get('nations', {})
+        scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn = scrape_website(
+            url, existing_nations_data)
+        if scraped_data is not None and status is not None and address is not None and next_turn is not None and game_name is not None and nations_data is not None and minutes_left is not None and turn is not None:
+            channels[channel_id]['nations'] = nations_data
             channels[channel_id]['status'] = status
             channels[channel_id]['address'] = address
             channels[channel_id]['next_turn'] = next_turn
