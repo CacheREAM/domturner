@@ -1,6 +1,6 @@
 from keys import TOKEN
 from logger import get_logger
-from bot import bot
+from commands import bot
 from autocheck import start_autocheck
 
 logger = get_logger()
