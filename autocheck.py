@@ -1,7 +1,7 @@
 import asyncio
 from database import load_channels, save_channels
 from logger import get_logger
-from commands import bot
+from bot import bot
 from utils import scrape_website
 
 logger = get_logger()

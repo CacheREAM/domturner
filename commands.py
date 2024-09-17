@@ -5,27 +5,11 @@ from database import load_channels, save_channels
 from config import SPACER1, SPACER2, EMOJISPACER1, EMOJISPACER2, EMOJIS
 from logger import get_logger
 from autocheck import handle_autocheck
+from bot import bot
 
 logger = get_logger()
 
 channels = load_channels()
-
-intents = discord.Intents.default()
-intents.typing = False
-intents.presences = False
-intents.members = True
-intents.message_content = True
-intents.guilds = True  # Required to cache guilds, needed for role mentions
-intents.bans = False  # Optional
-intents.emojis = True  # Optional
-intents.integrations = False  # Optional
-intents.invites = False  # Optional
-intents.voice_states = False  # Optional
-intents.reactions = True  # Required to cache messages and reactions
-intents.messages = True  # Optional, enables cache for messages
-intents.emojis_and_stickers = True  # Required for emoji and sticker intents
-
-bot = commands.Bot(command_prefix='?', intents=intents)
 
 
 @bot.command()
