@@ -53,8 +53,7 @@ def scrape_website(url):
             scraped_data.append((nation_name, status))
             nations_data[str(nation_id)] = {
                 'name': nation_name,
-                'status': status[0] if status else None,
-                'user': None
+                'status': status[0] if status else None
             }
             nation_id += 1
         # Get the text from the striped-table inside the pane status div
