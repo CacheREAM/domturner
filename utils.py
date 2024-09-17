@@ -34,7 +34,7 @@ def text_to_turn(text):
     return turn
 
 
-def scrape_website(url, nations_data):
+def scrape_website(url):
     try:
         response = requests.get(url)
         response.encoding = 'utf-8'  # Set encoding to UTF-8
@@ -42,6 +42,7 @@ def scrape_website(url, nations_data):
         nation_name_cells = soup.find_all(
             'td', class_='nation-name wide-column')
         scraped_data = []
+        nations_data = {}
         nation_id = 1
         for cell in nation_name_cells:
             nation_name = cell.find(
@@ -50,16 +51,11 @@ def scrape_website(url, nations_data):
                                                 'submitted', 'unsubmitted', 'unfinished', 'computer', 'dead'])
             status = [cell.text.strip() for cell in status_cells]
             scraped_data.append((nation_name, status))
-            nation_id_str = str(nation_id)
-            if nation_id_str not in nations_data:
-                nations_data[nation_id_str] = {
-                    'name': nation_name,
-                    'status': status[0] if status else None,
-                    'user': None
-                }
-            else:
-                nations_data[nation_id_str]['name'] = nation_name
-                nations_data[nation_id_str]['status'] = status[0] if status else None
+            nations_data[str(nation_id)] = {
+                'name': nation_name,
+                'status': status[0] if status else None,
+                'user': None
+            }
             nation_id += 1
         # Get the text from the striped-table inside the pane status div
         striped_table = soup.find('div', class_='pane status').find(
