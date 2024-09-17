@@ -61,19 +61,24 @@ async def unchecked(ctx):
                     status = nation_info['status']
                     if channels[channel_id]['options']['emoji_mode']:
                         status_emoji = EMOJIS.get(status, '')
-                        status_text = ['unsubmitted', 'submitted', 'unfinished', 'dead', 'computer'].get(
-                            status, 'Unknown')
+                        if status in ['unsubmitted', 'submitted', 'unfinished', 'dead', 'computer']:
+                            status_text = status
+                        else:
+                            status_text = 'Unknown'
                         status = f"{status_emoji} {status_text}"
                     else:
-                        status = ['unsubmitted', 'submitted', 'unfinished',
-                                  'dead', 'computer'].get(status, 'Unknown')
+                        if status in ['unsubmitted', 'submitted', 'unfinished', 'dead', 'computer']:
+                            status_text = status
+                        else:
+                            status_text = 'Unknown'
                     table += f"| {nation_id:<4} | {
                         nation_info['name']:<14} | {status:<14} |\n"
                 if channel_data['options']['emoji_mode']:
                     table += EMOJISPACER2
                 else:
                     table += SPACER2
-                output = f"```\n{table}\n```"
+                output = f"```\n{table}\nNext turn in: {
+                    channel_data['next_turn']}\n```"
                 if len(output) > 2000:
                     logger.warning(
                         f"Attempting to send large message, may exceed limits. Message length: {len(output)}")
