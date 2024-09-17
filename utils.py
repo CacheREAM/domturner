@@ -53,7 +53,7 @@ def scrape_website(url):
             scraped_data.append((nation_name, status))
             nations_data[str(nation_id)] = {
                 'name': nation_name,
-                'status': status,
+                'status': status[0] if status else None,
                 'user': None
             }
             nation_id += 1
