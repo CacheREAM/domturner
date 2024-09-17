@@ -207,6 +207,20 @@ async def toggle_emoji_mode(ctx):
 
 @bot.command()
 @commands.check(is_owner)
+async def toggle_autocheck(ctx):
+    channel_id = ctx.channel.id
+    if channel_id in channels:
+        channels[channel_id]['options']['autocheck'] = not channels[channel_id]['options']['autocheck']
+        save_channels(channels)
+        if channels[channel_id]['options']['autocheck']:
+            await handle_autocheck(channel_id)
+        await ctx.send(f"Autocheck is now {'on' if channels[channel_id]['options']['autocheck'] else 'off'} for channel {ctx.channel.mention}")
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+
+
+@bot.command()
+@commands.check(is_owner)
 async def view_options(ctx):
     channel_id = ctx.channel.id
     if channel_id in channels:
