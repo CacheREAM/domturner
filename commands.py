@@ -144,11 +144,10 @@ async def adduser(ctx, nation_id: int, user: discord.Member):
 async def deluser(ctx, nation_id: int):
     channel_id = ctx.channel.id
     if channel_id in channels:
-        if str(nation_id) in channels[channel_id]['nations']:
-            channels[channel_id]['nations'][str(nation_id)]['user'] = ''
+        if nation_id in channels[channel_id]['nations']:
+            channels[channel_id]['nations'][nation_id]['user'] = ''
             save_channels(channels)
-            nation_name = channels[channel_id]['nations'][str(
-                nation_id)]['name']
+            nation_name = channels[channel_id]['nations'][nation_id]['name']
             await ctx.send(f"Removed user from nation {nation_name}")
         else:
             await ctx.send(f"Nation {nation_id} not found in channel {ctx.channel.mention}")
