@@ -69,6 +69,10 @@ def scrape_website(url, existing_nations_data=None):
             'tr')[2].find_all('td')[1].text.strip()
         minutes_left = text_to_minutes(next_turn)
         turn = text_to_turn(status)
+        # Check if the data is empty
+        if not scraped_data or not status or not address or not next_turn or not minutes_left or not turn:
+            logger.warning('No data found, skipping this scrape')
+            return None, None, None, None, None, None, None, None
         # Print status, address, and next_turn variables
         print(f"Status: {status}, Address: {address}, Next Turn: {
               next_turn}, Minutes Left: {minutes_left}, Turn: {turn}")
