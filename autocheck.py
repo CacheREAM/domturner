@@ -34,9 +34,7 @@ async def handle_autocheck(channel_id):
         if role_id:
             role = channel.guild.get_role(int(role_id))
 
-        # Check if the current turn is higher than the previous turn
-        if 'previous_turn' in channel_data and channel_data['previous_turn'] < channel_data['turn']:
-            # Ping the role
+        if 'previous_turn' in channel_data and channel_data['previous_turn'] is not None and channel_data['previous_turn'] < channel_data['turn']:
             if role:
                 await channel.send(f"{role.mention} New turn!")
             channel_data['warned_timeleft'] = False
