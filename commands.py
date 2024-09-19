@@ -45,7 +45,7 @@ async def unbind(ctx):
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
 
 
-@bot.command()
+@bot.command(name='unchecked', aliases=['un', 'ue', 'uc', 'nations', 'status', 'undone', 'unfinished', 'unfinish', 'check', 'info'])
 async def unchecked(ctx):
     channel_id = ctx.channel.id
     if channel_id in channels:
