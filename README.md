@@ -15,3 +15,14 @@ A Discord bot written in Python that automatically scrapes blitzserver for game 
 ?toggle_emoji_mode - Will toggle emojis in the unchecked output  
 ?toggle_autocheck - Turns the autochecker on for the channel it is invoked in and immediately begins the scraping at intervals set by set_minutes_per_check  
 ?view_options - DMs you the options for the channel it is invoked in  
+
+# Installation
+
+git clone https://github.com/CacheREAM/domturner.git  
+python3 -m venv env  
+source env/bin/activate  
+pip install -r requirements.txt  
+  
+Now add your bot token and administrator user IDs to keys.py  
+  
+python3 main.py  
