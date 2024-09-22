@@ -80,6 +80,8 @@ async def handle_autocheck(channel_id):
 
 # Function to start autocheck for all channels
 async def start_autocheck():
+    tasks = []
     for channel_id, channel_data in channels.items():
         if channel_data['options']['autocheck']:
-            await handle_autocheck(channel_id)
+            tasks.append(handle_autocheck(channel_id))
+    await asyncio.gather(*tasks)
