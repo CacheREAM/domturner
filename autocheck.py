@@ -7,9 +7,8 @@ from channels import channels
 
 logger = get_logger()
 
+
 # Function to handle autocheck for a channel
-
-
 async def handle_autocheck(channel_id):
     channel_data = channels[channel_id]
     url = channel_data['url']
@@ -72,10 +71,10 @@ async def handle_autocheck(channel_id):
         # Save the updated channel data
         save_channels(channels)
 
-        # Schedule the next autocheck
-        minutes_per_check = channel_data['options']['minutes_per_check']
-        await asyncio.sleep(minutes_per_check * 60)
-        await handle_autocheck(channel_id)
+    # Schedule the next autocheck
+    minutes_per_check = channel_data['options']['minutes_per_check']
+    await asyncio.sleep(minutes_per_check * 60)
+    await handle_autocheck(channel_id)
 
 
 # Function to start autocheck for all channels
