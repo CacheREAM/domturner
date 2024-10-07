@@ -4,6 +4,7 @@ from commands import bot
 from autocheck import start_autocheck
 
 logger = get_logger()
+started = False
 
 
 # Event to log commands
@@ -16,7 +17,10 @@ async def on_command(ctx):
 # Start autocheck when the bot is ready
 @bot.event
 async def on_ready():
-    await start_autocheck()
+    global started
+    if not started:
+        await start_autocheck()
+        started = True
 
 
 # Run the bot
