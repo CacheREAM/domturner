@@ -6,10 +6,17 @@ from utils import scrape_website
 from channels import channels
 
 logger = get_logger()
+tasks = {}
 
 
 # Function to handle autocheck for a channel
 async def handle_autocheck(channel_id):
+    if channel_id in tasks and not tasks[channel_id].done():
+        tasks[channel_id].cancel()
+    tasks[channel_id] = asyncio.create_task(_handle_autocheck(channel_id))
+
+
+async def _handle_autocheck(channel_id):
     channel_data = channels[channel_id]
     url = channel_data['url']
     existing_nations_data = channels[channel_id].get('nations', {})
@@ -77,10 +84,24 @@ async def handle_autocheck(channel_id):
     await handle_autocheck(channel_id)
 
 
+async def toggle_channel_autocheck(channel_id):
+    if channel_id in channels:
+        channels[channel_id]['options']['autocheck'] = not channels[channel_id]['options']['autocheck']
+        save_channels(channels)
+        if channels[channel_id]['options']['autocheck']:
+            try:
+                await handle_autocheck(channel_id)
+            except Exception as e:
+                logger.error(f"Failed to start autocheck for channel {
+                             channel_id}: {str(e)}")
+
+
 # Function to start autocheck for all channels
 async def start_autocheck():
-    tasks = []
     for channel_id, channel_data in channels.items():
         if channel_data['options']['autocheck']:
-            tasks.append(handle_autocheck(channel_id))
-    await asyncio.gather(*tasks)
+            try:
+                await handle_autocheck(channel_id)
+            except Exception as e:
+                logger.error(f"Failed to start autocheck for channel {
+                             channel_id}: {str(e)}")

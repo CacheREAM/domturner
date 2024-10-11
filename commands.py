@@ -4,7 +4,7 @@ import discord
 from database import save_channels
 from config import SPACER1, SPACER2, EMOJISPACER1, EMOJISPACER2, EMOJIS
 from logger import get_logger
-from autocheck import handle_autocheck
+from autocheck import toggle_channel_autocheck
 from bot import bot
 from channels import channels
 
@@ -207,14 +207,8 @@ async def toggle_emoji_mode(ctx):
 @commands.check(is_owner)
 async def toggle_autocheck(ctx):
     channel_id = ctx.channel.id
-    if channel_id in channels:
-        channels[channel_id]['options']['autocheck'] = not channels[channel_id]['options']['autocheck']
-        save_channels(channels)
-        await ctx.send(f"Autocheck is now {'on' if channels[channel_id]['options']['autocheck'] else 'off'} for channel {ctx.channel.mention}")
-        if channels[channel_id]['options']['autocheck']:
-            await handle_autocheck(channel_id)
-    else:
-        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+    await toggle_channel_autocheck(channel_id)
+    await ctx.send(f"Autocheck is now {'on' if channels[channel_id]['options']['autocheck'] else 'off'} for channel {ctx.channel.mention}")
 
 
 @bot.command()
