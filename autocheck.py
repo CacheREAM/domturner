@@ -43,8 +43,8 @@ async def _handle_autocheck(channel_id):
         if 'previous_turn' in channel_data and channel_data['previous_turn'] is not None and channel_data['previous_turn'] < channel_data['turn']:
             if role:
                 await channel.send(f"{role.mention} New turn!")
-            channel_data['warned_timeleft'] = False
-            channel_data['warned_unready'] = False
+            channel_data['options']['warned_timeleft'] = False
+            channel_data['options']['warned_unready'] = False
         channel_data['previous_turn'] = channel_data['turn']
 
         # Check if minutes left is lower than the channel's min_time_before_warn
