@@ -140,6 +140,23 @@ async def adduser(ctx, nation_id: int, user: discord.Member):
 
 
 @bot.command()
+async def claim(ctx, nation_id: int):
+    channel_id = ctx.channel.id
+    if channel_id in channels:
+        if str(nation_id) in channels[channel_id]['nations']:
+            channels[channel_id]['nations'][str(
+                nation_id)]['user'] = str(ctx.author.id)
+            save_channels(channels)
+            nation_name = channels[channel_id]['nations'][str(
+                nation_id)]['name']
+            await ctx.send(f"Claimed nation {nation_name} as {ctx.author.mention}")
+        else:
+            await ctx.send(f"Nation {nation_id} not found in channel {ctx.channel.mention}")
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+
+
+@bot.command()
 @commands.check(is_owner)
 async def deluser(ctx, nation_id: int):
     channel_id = ctx.channel.id
