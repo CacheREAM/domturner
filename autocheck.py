@@ -23,9 +23,6 @@ async def _handle_autocheck(channel_id):
     scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn = scrape_website(
         url, existing_nations_data)
     if scraped_data is not None and status is not None and address is not None and next_turn is not None and game_name is not None and nations_data is not None and minutes_left is not None and turn is not None:
-        for nation_id, nation_data in channels[channel_id]['nations'].items():
-            if nation_id in nations_data:
-                nations_data[nation_id]['user'] = nation_data.get('user')
         channels[channel_id]['nations'] = nations_data
         channels[channel_id]['status'] = status
         channels[channel_id]['address'] = address
