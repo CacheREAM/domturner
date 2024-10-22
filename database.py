@@ -22,6 +22,7 @@ def load_channels():
                 channel_data['options'] = channel_data.get('options', {})
                 nations = {}
                 for nation_id, nation_data in channel_data.get('nations', {}).items():
+                    nation_data['user'] = nation_data.get('user', None)
                     nations[int(nation_id)] = nation_data
                 channels[int(channel_id)] = {
                     'url': channel_data['url'],
@@ -47,10 +48,17 @@ def load_channels():
 def save_channels(channels_param):
     channels_to_write = {}
     for channel_id, channel_data in channels_param.items():
+        nations_to_write = {}
+        for nation_id, nation_data in channel_data['nations'].items():
+            nations_to_write[nation_id] = {
+                'name': nation_data['name'],
+                'status': nation_data['status'],
+                'user': nation_data.get('user', None)
+            }
         channel_data_to_write = {
             'url': channel_data['url'],
             'role': channel_data.get('role', None),
-            'nations': {str(nation_id): nation_data for nation_id, nation_data in channel_data['nations'].items()},
+            'nations': nations_to_write,
             'options': channel_data.get('options', {}),
             'status': channel_data.get('status', None),
             'address': channel_data.get('address', None),
