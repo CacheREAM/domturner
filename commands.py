@@ -269,3 +269,14 @@ async def turns(ctx, user: discord.Member = None):
         await ctx.send(output)
     else:
         await ctx.send(f"No nations found for user {user.mention if user else ctx.author.mention}")
+
+
+@bot.command()
+@commands.check(is_owner)
+async def channel_info(ctx):
+    channel_id = ctx.channel.id
+    if channel_id in channels:
+        channel_data = channels[channel_id]
+        await ctx.author.send(f"Info for channel {ctx.channel.mention}:\n```json\n{channel_data}\n```")
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
