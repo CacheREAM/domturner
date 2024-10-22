@@ -244,3 +244,28 @@ async def view_options(ctx):
         await ctx.author.send(f"Options for channel {ctx.channel.mention}:\n{output}")
     else:
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+
+
+@bot.command(name='turns')
+async def turns(ctx, user: discord.Member = None):
+    if user is None:
+        user_id = ctx.author.id
+    else:
+        user_id = user.id
+
+    output = ""
+    for channel_id, channel_data in channels.items():
+        for nation_id, nation_info in channel_data['nations'].items():
+            if nation_info.get('user') == str(user_id):
+                if channel_data['options']['emoji_mode']:
+                    status = f"{EMOJIS.get(nation_info['status'], '')} {
+                        nation_info['status']}"
+                else:
+                    status = nation_info['status']
+                output += f"{channel_data['game_name']} - Nation {
+                    nation_id} ({nation_info['name']}): {status}\n"
+
+    if output:
+        await ctx.send(output)
+    else:
+        await ctx.send(f"No nations found for user {user.mention if user else ctx.author.mention}")
