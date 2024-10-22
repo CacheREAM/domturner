@@ -23,8 +23,8 @@ def load_channels():
                 nations = {}
                 for nation_id, nation_data in channel_data.get('nations', {}).items():
                     nation_data['user'] = nation_data.get('user', None)
-                    nations[int(nation_id)] = nation_data
-                channels[int(channel_id)] = {
+                    nations[nation_id] = nation_data
+                channels[channel_id] = {
                     'url': channel_data['url'],
                     'role': channel_data.get('role', None),
                     'nations': nations,
@@ -51,7 +51,7 @@ def save_channels(channels_param):
         nations_to_write = {}
         for nation_id, nation_data in channel_data['nations'].items():
             # Include all fields
-            nations_to_write[str(nation_id)] = nation_data.copy()
+            nations_to_write[nation_id] = nation_data.copy()
         channel_data_to_write = {
             'url': channel_data['url'],
             'role': channel_data.get('role', None),
@@ -67,7 +67,7 @@ def save_channels(channels_param):
             'warned_timeleft': channel_data.get('warned_timeleft', False),
             'warned_unready': channel_data.get('warned_unready', False)
         }
-        channels_to_write[channel_id] = channel_data_to_write
+        channels_to_write[str(channel_id)] = channel_data_to_write
     try:
         with open(CHANNELS_FILE, 'w') as f:
             json.dump(channels_to_write, f)
