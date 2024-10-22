@@ -53,11 +53,12 @@ def scrape_website(url, existing_nations_data=None):
             scraped_data.append((nation_name, status))
             existing_nation_data = existing_nations_data.get(
                 str(nation_id), {}) if existing_nations_data else {}
-            nations_data[str(nation_id)] = {
+            new_nation_data = {
                 'name': nation_name,
                 'status': status[0] if status else None,
-                'user': existing_nation_data.get('user')
             }
+            existing_nation_data.update(new_nation_data)
+            nations_data[str(nation_id)] = existing_nation_data
             nation_id += 1
         # Get the text from the striped-table inside the pane status div
         striped_table = soup.find('div', class_='pane status').find(
