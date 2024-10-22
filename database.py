@@ -50,11 +50,8 @@ def save_channels(channels_param):
     for channel_id, channel_data in channels_param.items():
         nations_to_write = {}
         for nation_id, nation_data in channel_data['nations'].items():
-            nations_to_write[nation_id] = {
-                'name': nation_data['name'],
-                'status': nation_data['status'],
-                'user': nation_data.get('user', None)
-            }
+            # Include all fields
+            nations_to_write[nation_id] = nation_data.copy()
         channel_data_to_write = {
             'url': channel_data['url'],
             'role': channel_data.get('role', None),
