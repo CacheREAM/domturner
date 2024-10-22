@@ -56,6 +56,7 @@ def scrape_website(url, existing_nations_data=None):
             new_nation_data = {
                 'name': nation_name,
                 'status': status[0] if status else None,
+                'user': existing_nation_data.get('user'),
             }
             existing_nation_data.update(new_nation_data)
             nations_data[str(nation_id)] = existing_nation_data
