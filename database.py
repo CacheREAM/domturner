@@ -51,7 +51,7 @@ def save_channels(channels_param):
         nations_to_write = {}
         for nation_id, nation_data in channel_data['nations'].items():
             # Include all fields
-            nations_to_write[nation_id] = nation_data.copy()
+            nations_to_write[str(nation_id)] = nation_data.copy()
         channel_data_to_write = {
             'url': channel_data['url'],
             'role': channel_data.get('role', None),
