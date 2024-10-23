@@ -264,6 +264,8 @@ async def turns(ctx, user: discord.Member = None):
                     status = nation_info['status']
                 output += f"{channel_data['game_name']} - Nation {
                     nation_id} ({nation_info['name']}): {status}\n"
+                output += f"Turn: {channel_data.get('turn', 'N/A')}, Next Turn: {
+                    channel_data.get('next_turn', 'N/A')}\n\n"
 
     if output:
         await ctx.send(output)
