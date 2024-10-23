@@ -23,7 +23,7 @@ def load_channels():
                 nations = {}
                 for nation_id, nation_data in channel_data.get('nations', {}).items():
                     nation_data['user'] = nation_data.get('user', None)
-                    nations[int(nation_id)] = nation_data
+                    nations[nation_id] = nation_data
                 channels[int(channel_id)] = {
                     'url': channel_data['url'],
                     'role': channel_data.get('role', None),
