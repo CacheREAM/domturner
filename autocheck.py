@@ -54,7 +54,7 @@ async def _handle_autocheck(channel_id):
                 await channel.send(f"{role.mention} Time is running out!")
             # Ping the users attached to the nations that are currently unsubmitted and unfinished
             for nation_id, nation_data in channel_data['nations'].items():
-                if nation_data['status'] in ['unsubmitted', 'unfinished']:
+                if nation_data['status'] in ['unsubmitted', 'unfinished', '-', 'Turn unfinished']:
                     user_id = nation_data.get('user')
                     if user_id:
                         await channel.send(f"<@{user_id}> Time is running out!")
@@ -69,7 +69,7 @@ async def _handle_autocheck(channel_id):
                 await channel.send(f"{role.mention} {unready_nations} players are not ready!")
             # Ping the users attached to the nations that are currently unsubmitted and unfinished
             for nation_id, nation_data in channel_data['nations'].items():
-                if nation_data['status'] in ['unsubmitted', 'unfinished']:
+                if nation_data['status'] in ['unsubmitted', 'unfinished', '-', 'Turn unfinished']:
                     user_id = nation_data.get('user')
                     if user_id:
                         await channel.send(f"<@{user_id}> Your nation is not ready!")
