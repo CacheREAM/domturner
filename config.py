@@ -3,7 +3,10 @@ EMOJIS = {
     'computer': '\u274E',
     'unfinished': '❌',
     'submitted': '\u2705',
-    'unsubmitted': '❌'
+    'unsubmitted': '❌',
+    'Turn played': '\u2705',
+    '-': '❌',
+    'Turn unfinished': '❌'
 }
 
 SPACER1 = "+------+----------------+----------------+\n| ID   | Nation Name    | Status         |\n+------+----------------+----------------+\n"
