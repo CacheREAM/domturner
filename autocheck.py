@@ -62,7 +62,7 @@ async def _handle_autocheck(channel_id):
 
         # Check if the combined amount of unsubmitted and unfinished nations are lower than min_unready_before_warn
         unready_nations = sum(1 for nation_id, nation_data in channel_data['nations'].items(
-        ) if nation_data['status'] in ['unsubmitted', 'unfinished'])
+        ) if nation_data['status'] in ['unsubmitted', 'unfinished', '-', 'Turn unfinished'])
         if not channel_data['options']['warned_unready'] and unready_nations < channel_data['options']['min_unready_before_warn']:
             # Ping the role
             if role:
