@@ -55,7 +55,7 @@ def scrape_website(url, existing_nations_data=None):
             nation_id = 1
             for row in table.find_all('tr')[1:]:
                 cells = row.find_all('td')
-                nation_name = cells[0].text.strip()
+                nation_name = cells[0].text.strip().split(',')[0]
                 status = cells[1].text.strip()
                 scraped_data.append((nation_name, status))
                 existing_nation_data = existing_nations_data.get(
