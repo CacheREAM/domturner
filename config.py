@@ -1,5 +1,6 @@
 EMOJIS = {
     'dead': '\u274E',
+    'Eliminated': '\u274E',
     'computer': '\u274E',
     'unfinished': '❌',
     'submitted': '\u2705',

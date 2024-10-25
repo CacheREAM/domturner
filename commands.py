@@ -61,13 +61,13 @@ async def unchecked(ctx):
                     status = nation_info['status']
                     if channels[channel_id]['options']['emoji_mode']:
                         status_emoji = EMOJIS.get(status, '')
-                        if status in ['unsubmitted', 'submitted', 'unfinished', 'dead', 'computer', '-', 'Turn played', 'Turn unfinished']:
+                        if status in ['unsubmitted', 'submitted', 'unfinished', 'dead', 'computer', '-', 'Turn played', 'Turn unfinished', 'Eliminated']:
                             status_text = status
                         else:
                             status_text = 'Unknown'
                         status = f"{status_emoji} {status_text}"
                     else:
-                        if status in ['unsubmitted', 'submitted', 'unfinished', 'dead', 'computer', '-', 'Turn played', 'Turn unfinished']:
+                        if status in ['unsubmitted', 'submitted', 'unfinished', 'dead', 'computer', '-', 'Turn played', 'Turn unfinished', 'Eliminated']:
                             status_text = status
                         else:
                             status_text = 'Unknown'
