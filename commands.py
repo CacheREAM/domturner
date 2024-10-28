@@ -140,6 +140,23 @@ async def adduser(ctx, nation_id: int, user: discord.Member):
 
 
 @bot.command()
+@commands.check(is_owner)
+async def deluser(ctx, nation_id: int):
+    channel_id = ctx.channel.id
+    if channel_id in channels:
+        if str(nation_id) in channels[channel_id]['nations']:
+            channels[channel_id]['nations'][str(nation_id)]['user'] = ''
+            save_channels(channels)
+            nation_name = channels[channel_id]['nations'][str(
+                nation_id)]['name']
+            await ctx.send(f"Removed user from nation {nation_name}")
+        else:
+            await ctx.send(f"Nation {nation_id} not found in channel {ctx.channel.mention}")
+    else:
+        await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
+
+
+@bot.command()
 async def claim(ctx, nation_id: int):
     channel_id = ctx.channel.id
     if channel_id in channels:
@@ -157,16 +174,22 @@ async def claim(ctx, nation_id: int):
 
 
 @bot.command()
-@commands.check(is_owner)
-async def deluser(ctx, nation_id: int):
+async def unclaim(ctx, nation_id: int):
     channel_id = ctx.channel.id
     if channel_id in channels:
         if str(nation_id) in channels[channel_id]['nations']:
-            channels[channel_id]['nations'][str(nation_id)]['user'] = ''
-            save_channels(channels)
-            nation_name = channels[channel_id]['nations'][str(
-                nation_id)]['name']
-            await ctx.send(f"Removed user from nation {nation_name}")
+            claimed_by = channels[channel_id]['nations'][str(
+                nation_id)].get('user')
+            if claimed_by and claimed_by == str(ctx.author.id):
+                channels[channel_id]['nations'][str(nation_id)]['user'] = ''
+                save_channels(channels)
+                nation_name = channels[channel_id]['nations'][str(
+                    nation_id)]['name']
+                await ctx.send(f"Unclaimed nation {nation_name} as {ctx.author.mention}")
+            elif claimed_by:
+                await ctx.send(f"Nation {nation_id} is claimed by <@{claimed_by}>.")
+            else:
+                await ctx.send(f"Nation {nation_id} is not claimed.")
         else:
             await ctx.send(f"Nation {nation_id} not found in channel {ctx.channel.mention}")
     else:
