@@ -16,14 +16,17 @@ def text_to_minutes(text):
     if text == "On submission":
         return 999999999  # Return a high number if text is "On submission"
 
-    # Use regular expressions to extract hours and minutes
+    days_match = re.search(r"(\d+) days?", text)
     hours_match = re.search(r"(\d+) hours?", text)
     minutes_match = re.search(r"(\d+) minutes?", text)
 
+    days = int(days_match.group(1)) if days_match else 0
     hours = int(hours_match.group(1)) if hours_match else 0
     minutes = int(minutes_match.group(1)) if minutes_match else 0
 
-    return hours * 60 + minutes
+    total_minutes = (days * 24 * 60) + (hours * 60) + minutes
+
+    return total_minutes
 
 
 def text_to_turn(text):
