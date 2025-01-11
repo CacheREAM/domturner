@@ -1,4 +1,4 @@
-from keys import OWNER_IDS
+from keys import OWNER_IDS, BANNED_IDS
 from bs4 import BeautifulSoup
 from logger import get_logger
 import requests
@@ -10,6 +10,10 @@ logger = get_logger()
 # Check if user is owner
 def is_owner(ctx):
     return ctx.author.id in OWNER_IDS
+
+
+def is_not_banned(ctx):
+    return ctx.author.id not in BANNED_IDS
 
 
 def text_to_minutes(text):

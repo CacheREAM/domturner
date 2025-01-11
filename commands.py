@@ -1,4 +1,4 @@
-from utils import is_owner, scrape_website
+from utils import is_owner, is_not_banned, scrape_website
 from discord.ext import commands
 import discord
 from database import save_channels
@@ -157,6 +157,7 @@ async def deluser(ctx, nation_id: int):
 
 
 @bot.command()
+@commands.check(is_not_banned)
 async def claim(ctx, nation_id: int):
     channel_id = ctx.channel.id
     if channel_id in channels:
