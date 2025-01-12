@@ -59,6 +59,16 @@ async def unchecked(ctx):
                     table = SPACER1
                 for nation_id, nation_info in nations_data.items():
                     status = nation_info['status']
+                    user_id = nation_info['user']
+                    user = bot.get_user(user_id)
+                    if user:
+                        username = user.name
+                    else:
+                        try:
+                            user = await bot.fetch_user(user_id)
+                            username = user.name
+                        except discord.HTTPException:
+                            username = "Unknown User"
                     if channels[channel_id]['options']['emoji_mode']:
                         status_emoji = EMOJIS.get(status, '')
                         if status in ['unsubmitted', 'submitted', 'unfinished', 'dead', 'computer', '-', 'Turn played', 'Turn unfinished', 'Eliminated']:
@@ -71,8 +81,8 @@ async def unchecked(ctx):
                             status_text = status
                         else:
                             status_text = 'Unknown'
-                    table += f"| {nation_id:<4} | {
-                        nation_info['name']:<14} | {status:<14} |\n"
+                    table += f"| {nation_id:<4} | {nation_info['name']:<14} | {
+                        username:<20} | {status:<14} |\n"
                 if channel_data['options']['emoji_mode']:
                     table += EMOJISPACER2
                 else:
