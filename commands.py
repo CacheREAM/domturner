@@ -53,10 +53,9 @@ async def unchecked(ctx):
         if 'nations' in channel_data:
             nations_data = channel_data['nations']
             if len(nations_data) > 0:
-                if channel_data['options']['emoji_mode']:
-                    table = EMOJISPACER1
-                else:
-                    table = SPACER1
+                rows = []
+                table_start = EMOJISPACER1 if channel_data['options']['emoji_mode'] else SPACER1
+                table_end = EMOJISPACER2 if channel_data['options']['emoji_mode'] else SPACER2
                 for nation_id, nation_info in nations_data.items():
                     status = nation_info['status']
                     user_id = nation_info['user']
@@ -81,23 +80,32 @@ async def unchecked(ctx):
                             status_text = status
                         else:
                             status_text = 'Unknown'
-                    table += f"| {nation_id:<4} | {nation_info['name']:<14} | {
+                    row = f"| {nation_id:<4} | {nation_info['name']:<14} | {
                         username:<20} | {status:<14} |\n"
-                if channel_data['options']['emoji_mode']:
-                    table += EMOJISPACER2
-                else:
-                    table += SPACER2
-                output = f"```\n{table}\nNext turn in: {
+                    rows.append(row)
+                max_message_length = 2000
+                next_turn_info = f"\nNext turn in: {
                     channel_data['next_turn']}\n```"
-                if len(output) > 2000:
-                    logger.warning(
-                        f"Attempting to send large message, may exceed limits. Message length: {len(output)}")
-                    messages = [output[i:i + 2000]
-                                for i in range(0, len(output), 2000)]
-                    for message in messages:
-                        await ctx.send(message)
-                else:
-                    await ctx.send(output)
+                test_message = f"```\n{table_start}"
+                max_rows = 0
+                while True:
+                    if max_rows < len(rows):
+                        test_message += rows[max_rows]
+                    else:
+                        break
+                    if len(test_message) + len(table_end) + len(next_turn_info) > max_message_length:
+                        break
+                    max_rows += 1
+                chunk_size = max_rows
+                messages = []
+                for i in range(0, len(rows), chunk_size):
+                    chunk = rows[i:i + chunk_size]
+                    message = f"```\n{table_start}"
+                    message += "".join(chunk)
+                    message += table_end + next_turn_info
+                    messages.append(message)
+                for message in messages:
+                    await ctx.send(message)
             else:
                 await ctx.send('No nation data available')
         else:
