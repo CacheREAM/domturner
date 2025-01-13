@@ -298,28 +298,25 @@ async def turns(ctx, user: discord.Member = None):
 
     output = ""
     for channel_id, channel_data in channels.items():
-        has_nation = False
-        unfinished_count = 0
-        user_nations = []
+        unsubmitted_count = 0
+        user_nations = False
         for nation_id, nation_info in channel_data['nations'].items():
             if nation_info.get('user') == str(user_id):
-                has_nation = True
-                user_nations.append(nation_info)
-        for nation in user_nations:
-            if nation['status'] in ['unsubmitted', 'unfinished', '-', 'Turn unfinished']:
-                unfinished_count += 1
-            if channel_data['options']['emoji_mode']:
-                status = f"{EMOJIS.get(nation['status'], '')} {
-                    nation['status']}"
-            else:
-                status = nation['status']
-            output += f"{channel_data['game_name']} - Nation {
-                nation['nation_id']} ({nation['name']}): {status}\n"
-            output += f"Turn: {channel_data.get('turn', 'N/A')}, Next Turn: {
-                channel_data.get('next_turn', 'N/A')}\n\n"
+                user_nations = True
+                if channel_data['options']['emoji_mode']:
+                    status = f"{EMOJIS.get(nation_info['status'], '')} {
+                        nation_info['status']}"
+                else:
+                    status = nation_info['status']
+                output += f"{channel_data['game_name']} - Nation {
+                    nation_id} ({nation_info['name']}): {status}\n"
+                if nation_info['status'] in ['unsubmitted', 'unfinished', '-', 'Turn unfinished']:
+                    unsubmitted_count += 1
         if user_nations:
-            output += f"Total unfinished nations for {
-                channel_data['game_name']}: {unfinished_count}\n\n"
+            output += f"Turn: {channel_data.get('turn', 'N/A')}, Next Turn: {
+                channel_data.get('next_turn', 'N/A')}\n"
+            output += f"Unsubmitted/Unfinished Nations: {
+                unsubmitted_count}\n\n"
 
     if output:
         await ctx.send(output)
