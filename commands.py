@@ -299,10 +299,12 @@ async def turns(ctx, user: discord.Member = None):
     output = ""
     for channel_id, channel_data in channels.items():
         unsubmitted_count = 0
-        user_nations = False
+        matching_nation = False
         for nation_id, nation_info in channel_data['nations'].items():
+            if nation_info.get('status') in ["unsubmitted", "unfinished"]:
+                unsubmitted_count += 1
             if nation_info.get('user') == str(user_id):
-                user_nations = True
+                matching_nation = True
                 if channel_data['options']['emoji_mode']:
                     status = f"{EMOJIS.get(nation_info['status'], '')} {
                         nation_info['status']}"
@@ -310,12 +312,10 @@ async def turns(ctx, user: discord.Member = None):
                     status = nation_info['status']
                 output += f"{channel_data['game_name']} - Nation {
                     nation_id} ({nation_info['name']}): {status}\n"
-                if nation_info['status'] in ['unsubmitted', 'unfinished', '-', 'Turn unfinished']:
-                    unsubmitted_count += 1
-        if user_nations:
-            output += f"Turn: {channel_data.get('turn', 'N/A')}, Next Turn: {
-                channel_data.get('next_turn', 'N/A')}\n"
-            output += f"Unsubmitted/Unfinished Nations: {
+                output += f"Turn: {channel_data.get('turn', 'N/A')}, Next Turn: {
+                    channel_data.get('next_turn', 'N/A')}\n"
+        if matching_nation:
+            output += f"Unsubmitted/Unfinished Nations in this game: {
                 unsubmitted_count}\n\n"
 
     if output:
