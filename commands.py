@@ -298,6 +298,8 @@ async def turns(ctx, user: discord.Member = None):
 
     output = ""
     for channel_id, channel_data in channels.items():
+        game_unready_count = 0
+        user_nations = []
         for nation_id, nation_info in channel_data['nations'].items():
             if nation_info.get('user') == str(user_id):
                 if channel_data['options']['emoji_mode']:
@@ -305,10 +307,18 @@ async def turns(ctx, user: discord.Member = None):
                         nation_info['status']}"
                 else:
                     status = nation_info['status']
-                output += f"{channel_data['game_name']} - Nation {
-                    nation_id} ({nation_info['name']}): {status}\n"
-                output += f"Turn: {channel_data.get('turn', 'N/A')}, Next Turn: {
-                    channel_data.get('next_turn', 'N/A')}\n\n"
+                user_nations.append((nation_id, nation_info))
+        if user_nations:
+            output += f"{channel_data['game_name']}\n"
+            for nation_id, nation_info in user_nations:
+                output += f"  - Nation {nation_id} ({nation_info['name']}): {
+                    status}\n"
+                output += f"  Turn: {channel_data.get('turn', 'N/A')}, Next Turn: {
+                    channel_data.get('next_turn', 'N/A')}\n"
+                if nation_info['status'] in ['unsubmitted', 'unfinished', '-', 'Turn unfinished']:
+                    game_unready_count += 1
+            output += f"  Number of unready players in this game: {
+                game_unready_count}\n\n"
 
     if output:
         await ctx.send(output)
