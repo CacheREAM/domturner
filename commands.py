@@ -301,7 +301,7 @@ async def turns(ctx, user: discord.Member = None):
         unsubmitted_count = 0
         matching_nation = False
         for nation_id, nation_info in channel_data['nations'].items():
-            if nation_info.get('status') in ["unsubmitted", "unfinished"]:
+            if nation_info.get('status') in ['unsubmitted', 'unfinished', '-', 'Turn unfinished']:
                 unsubmitted_count += 1
             if nation_info.get('user') == str(user_id):
                 matching_nation = True
@@ -315,7 +315,7 @@ async def turns(ctx, user: discord.Member = None):
                 output += f"Turn: {channel_data.get('turn', 'N/A')}, Next Turn: {
                     channel_data.get('next_turn', 'N/A')}\n"
         if matching_nation:
-            output += f"Unsubmitted/Unfinished Nations in this game: {
+            output += f"Unready nations in this game: {
                 unsubmitted_count}\n\n"
 
     if output:
