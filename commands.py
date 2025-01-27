@@ -182,6 +182,11 @@ async def claim(ctx, nation_id: int):
         if str(nation_id) in channels[channel_id]['nations']:
             channels[channel_id]['nations'][str(
                 nation_id)]['user'] = str(ctx.author.id)
+            role_id = channels[channel_id].get('role')
+            if role_id:
+                role = discord.utils.get(ctx.guild.roles, id=int(role_id))
+                if role:
+                    await ctx.author.add_roles(role)
             save_channels(channels)
             nation_name = channels[channel_id]['nations'][str(
                 nation_id)]['name']
@@ -201,6 +206,11 @@ async def unclaim(ctx, nation_id: int):
                 nation_id)].get('user')
             if claimed_by and claimed_by == str(ctx.author.id):
                 channels[channel_id]['nations'][str(nation_id)]['user'] = ''
+                role_id = channels[channel_id].get('role')
+                if role_id:
+                    role = discord.utils.get(ctx.guild.roles, id=int(role_id))
+                    if role:
+                        await ctx.author.remove_roles(role)
                 save_channels(channels)
                 nation_name = channels[channel_id]['nations'][str(
                     nation_id)]['name']
