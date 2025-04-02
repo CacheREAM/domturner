@@ -44,10 +44,17 @@ def text_to_turn(text):
 def scrape_website(url, existing_nations_data=None):
     try:
         if "illwinter.com" in url:
-            response = requests.get(url)
+            response = requests.get(url, timeout=10)
+            if response.status_code != 200:
+                logger.warning(f'Failed to retrieve {url}. Status code: {
+                               response.status_code}')
+                return None, None, None, None, None, None, None, None
             response.encoding = 'utf-8'  # Set encoding to UTF-8
             soup = BeautifulSoup(response.text, 'html.parser')
             table = soup.find('table')
+            if not table:
+                logger.warning(f'No table found at {url}')
+                return None, None, None, None, None, None, None, None
             game_info = table.find('tr').find('td').text.strip()
             game_name, info = game_info.split(',', 1)
             game_name = game_name.strip()
@@ -83,11 +90,18 @@ def scrape_website(url, existing_nations_data=None):
             return scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn
 
         else:
-            response = requests.get(url)
+            response = requests.get(url, timeout=10)
+            if response.status_code != 200:
+                logger.warning(f'Failed to retrieve {url}. Status code: {
+                               response.status_code}')
+                return None, None, None, None, None, None, None, None
             response.encoding = 'utf-8'  # Set encoding to UTF-8
             soup = BeautifulSoup(response.text, 'html.parser')
             nation_name_cells = soup.find_all(
                 'td', class_='nation-name wide-column')
+            if not nation_name_cells:
+                logger.warning(f'No nation name cells found at {url}')
+                return None, None, None, None, None, None, None, None
             scraped_data = []
             nations_data = {}
             nation_id = 1
@@ -111,6 +125,9 @@ def scrape_website(url, existing_nations_data=None):
             # Get the text from the striped-table inside the pane status div
             striped_table = soup.find('div', class_='pane status').find(
                 'table', class_='striped-table')
+            if not striped_table:
+                logger.warning(f'No striped table found at {url}')
+                return None, None, None, None, None, None, None, None
             status = striped_table.find_all('tr')[0].find_all('td')[
                 1].text.strip()
             address = striped_table.find_all('tr')[1].find_all('td')[
@@ -129,6 +146,9 @@ def scrape_website(url, existing_nations_data=None):
             # Get the game name
             game_name = soup.find('h1').text.strip()
             return scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn
+    except requests.exceptions.RequestException as e:
+        logger.error(f'Error: {e}')
+        return None, None, None, None, None, None, None, None
     except Exception as e:
         logger.error(f'Error: {e}')
         return None, None, None, None, None, None, None, None
