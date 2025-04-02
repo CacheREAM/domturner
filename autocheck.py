@@ -20,8 +20,24 @@ async def _handle_autocheck(channel_id):
     channel_data = channels[channel_id]
     url = channel_data['url']
     existing_nations_data = channels[channel_id].get('nations', {})
-    scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn = scrape_website(
-        url, existing_nations_data)
+
+    try:
+        scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn = await asyncio.wait_for(scrape_website(url, existing_nations_data), timeout=30)
+    except asyncio.TimeoutError:
+        logger.error(f"Failed to scrape website for channel {
+                     channel_id}: Timed out")
+        await asyncio.sleep(5)
+        await asyncio.sleep(channel_data['options']['minutes_per_check'] * 60)
+        await handle_autocheck(channel_id)
+        return
+    except Exception as e:
+        logger.error(f"Failed to scrape website for channel {
+                     channel_id}: {str(e)}")
+        await asyncio.sleep(5)
+        await asyncio.sleep(channel_data['options']['minutes_per_check'] * 60)
+        await handle_autocheck(channel_id)
+        return
+
     if scraped_data is not None and status is not None and address is not None and next_turn is not None and game_name is not None and nations_data is not None and minutes_left is not None and turn is not None:
         channels[channel_id]['nations'] = nations_data
         channels[channel_id]['status'] = status
@@ -80,7 +96,7 @@ async def _handle_autocheck(channel_id):
 
     # Schedule the next autocheck
     minutes_per_check = channel_data['options']['minutes_per_check']
-    await asyncio.sleep(5)  # perhaps this will fix it
+    await asyncio.sleep(5)
     await asyncio.sleep(minutes_per_check * 60)
     await handle_autocheck(channel_id)
 
