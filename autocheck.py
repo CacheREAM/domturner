@@ -80,6 +80,7 @@ async def _handle_autocheck(channel_id):
 
     # Schedule the next autocheck
     minutes_per_check = channel_data['options']['minutes_per_check']
+    await asyncio.sleep(5)  # perhaps this will fix it
     await asyncio.sleep(minutes_per_check * 60)
     await handle_autocheck(channel_id)
 
