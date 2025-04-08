@@ -10,6 +10,8 @@ from channels import channels
 
 logger = get_logger()
 
+usernames = {}
+
 
 @bot.command()
 @commands.check(is_owner)
@@ -60,14 +62,20 @@ async def unchecked(ctx):
                     status = nation_info['status']
                     user_id = nation_info['user']
                     user = bot.get_user(user_id)
-                    if user:
-                        username = user.name
+                    if user_id in usernames:
+                        username = usernames[user_id]
                     else:
-                        try:
-                            user = await bot.fetch_user(user_id)
+                        if user:
                             username = user.name
-                        except discord.HTTPException:
-                            username = "Unknown User"
+                            usernames[user_id] = username
+                        else:
+                            try:
+                                user = await bot.fetch_user(user_id)
+                                username = user.name
+                                usernames[user_id] = username
+                            except discord.HTTPException:
+                                username = "Unknown User"
+                                usernames[user_id] = username
                     if channels[channel_id]['options']['emoji_mode']:
                         status_emoji = EMOJIS.get(status, '')
                         if status in ['unsubmitted', 'submitted', 'unfinished', 'dead', 'computer', '-', 'Turn played', 'Turn unfinished', 'Eliminated']:
