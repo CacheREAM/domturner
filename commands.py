@@ -1,4 +1,4 @@
-from utils import is_owner, is_not_banned, scrape_website
+from utils import is_owner, is_not_banned, scrape_website, text_to_minutes
 from discord.ext import commands
 import discord
 from database import save_channels
@@ -7,6 +7,8 @@ from logger import get_logger
 from autocheck import toggle_channel_autocheck
 from bot import bot
 from channels import channels
+import time
+
 
 logger = get_logger()
 
@@ -331,7 +333,7 @@ async def turns(ctx, user: discord.Member = None):
                 output += f"{channel_data['game_name']} - Nation {
                     nation_id} ({nation_info['name']}): {status}\n"
                 output += f"Turn: {channel_data.get('turn', 'N/A')}, Next Turn: {
-                    channel_data.get('next_turn', 'N/A')}\n"
+                    channel_data.get('next_turn', 'N/A')},<t:{int(time.time) + text_to_minutes(channel_data.get('next_turn'))}:f>\n"
         if matching_nation:
             output += f"Unready nations in this game: {
                 unsubmitted_count}\n\n"
