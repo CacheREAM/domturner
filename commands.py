@@ -333,7 +333,7 @@ async def turns(ctx, user: discord.Member = None):
                 output += f"{channel_data['game_name']} - Nation {
                     nation_id} ({nation_info['name']}): {status}\n"
                 output += f"Turn: {channel_data.get('turn', 'N/A')}, Next Turn: {
-                    channel_data.get('next_turn', 'N/A')},<t:{time.time() + text_to_minutes(channel_data.get('next_turn'))}:f>\n"
+                    channel_data.get('next_turn', 'N/A')}, <t:{int(time.time()) + text_to_minutes(channel_data.get('next_turn'))}:f>\n"
         if matching_nation:
             output += f"Unready nations in this game: {
                 unsubmitted_count}\n\n"
