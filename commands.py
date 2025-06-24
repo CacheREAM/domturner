@@ -94,7 +94,7 @@ async def unchecked(ctx):
                         username:<20} | {status:<14} |\n"
                     rows.append(row)
                 max_message_length = 2000
-                next_turn_info = f"\nNext turn in: {
+                next_turn_info = f"\nCurrent turn: {channel_data['turn']}, Next turn in: {
                     channel_data['next_turn']}\n```"
                 test_message = f"```\n{table_start}"
                 max_rows = 0
