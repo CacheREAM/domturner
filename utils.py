@@ -44,7 +44,7 @@ def text_to_turn(text):
 def scrape_website(url, existing_nations_data=None):
     try:
         if "illwinter.com" in url:
-            response = requests.get(url, timeout=10)
+            response = requests.get(url, timeout=10, verify=False)
             if response.status_code != 200:
                 logger.warning(f'Failed to retrieve {url}. Status code: {
                                response.status_code}')
