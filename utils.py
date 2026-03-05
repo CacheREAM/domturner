@@ -89,6 +89,60 @@ def scrape_website(url, existing_nations_data=None):
                   next_turn}, Minutes Left: {minutes_left}, Turn: {turn}")
             return scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn
 
+        elif "hinaserver.net" in url:
+            response = requests.get(url, timeout=10)
+            if response.status_code != 200:
+                logger.warning(f'Failed to retrieve {url}. Status code: {response.status_code}')
+                return None, None, None, None, None, None, None, None
+            response.encoding = 'utf-8'
+            soup = BeautifulSoup(response.text, 'html.parser')
+            pretender_divs = soup.find_all('div', class_='pretender')
+            if not pretender_divs:
+                logger.warning(f'No pretender divs found at {url}')
+                return None, None, None, None, None, None, None, None
+            scraped_data = []
+            nations_data = {}
+            nation_id = 1
+            for div in pretender_divs:
+                info_div, state_div = div.find_all('div', recursive=False)[:2]
+                nation_name_tag = info_div.find('div', class_='nation-title')
+                status_tag = state_div.find('div', class_='submission-state')
+                nation_name = nation_name_tag.text.strip() if nation_name_tag else None
+                status = status_tag.text.strip() if status_tag else None
+                scraped_data.append((nation_name, status))
+                existing_nation_data = existing_nations_data.get(str(nation_id), {}) if existing_nations_data else {}
+                existing_nation_data.update({
+                    'name': nation_name,
+                    'status': status,
+                    'user': existing_nation_data.get('user'),
+                })
+                nations_data[str(nation_id)] = existing_nation_data
+                nation_id += 1
+            game_state = soup.find('div', id='game-state')
+            if not game_state:
+                logger.warning(f'No game-state div found at {url}')
+                return None, None, None, None, None, None, None, None
+            dl = game_state.find('dl')
+            if not dl:
+                logger.warning(f'No dl found in game-state at {url}')
+                return None, None, None, None, None, None, None, None
+            dds = dl.find_all('dd')
+            if len(dds) < 4:
+                logger.warning(f'Not enough dd elements in game-state at {url}')
+                return None, None, None, None, None, None, None, None
+            address = dds[0].text.strip()
+            status = dds[1].text.strip()
+            turn = text_to_turn(dds[2].text.strip())
+            next_turn = dds[3].text.strip()
+            minutes_left = text_to_minutes(next_turn)
+            game_name_tag = soup.find('h1', class_='game-name')
+            game_name = game_name_tag.text.strip() if game_name_tag else None
+            if not scraped_data or not status or not address or not next_turn or not minutes_left or not turn:
+                logger.warning('No data found, skipping this scrape')
+                return None, None, None, None, None, None, None, None
+            print(f"Status: {status}, Address: {address}, Next Turn: {next_turn}, Minutes Left: {minutes_left}, Turn: {turn}")
+            return scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn
+
         else:
             response = requests.get(url, timeout=10)
             if response.status_code != 200:
