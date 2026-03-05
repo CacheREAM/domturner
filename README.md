@@ -1,6 +1,6 @@
 # Dominions Turner
 
-A Discord bot written in Python that automatically scrapes blitzserver for game information
+A Discord bot written in Python that automatically scrapes blitzserver, illwinter, and hinaserver lobbies for game information
 
 # Commands
 ?unchecked - Retrieves the last set of scraped data for the channel it is invoked in  
