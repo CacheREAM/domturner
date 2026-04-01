@@ -135,8 +135,8 @@ def scrape_website(url, existing_nations_data=None):
             turn = text_to_turn(dds[2].text.strip())
             next_turn = dds[3].text.strip()
             minutes_left = text_to_minutes(next_turn)
-            game_name_tag = soup.find('h1', class_='game-name')
-            game_name = game_name_tag.text.strip() if game_name_tag else None
+            game_name_div = soup.find('div', id='game-name')
+            game_name = game_name_div.text.strip() if game_name_div else None
             if not scraped_data or not status or not address or not next_turn or not minutes_left or not turn:
                 logger.warning('No data found, skipping this scrape')
                 return None, None, None, None, None, None, None, None
