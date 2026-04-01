@@ -123,7 +123,6 @@ async def unchecked(ctx):
     else:
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
 
-
 @bot.command()
 @commands.check(is_owner)
 async def forcescrape(ctx):
@@ -133,7 +132,7 @@ async def forcescrape(ctx):
         existing_nations_data = channels[channel_id].get('nations', {})
         scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn = scrape_website(
             url, existing_nations_data)
-        if scraped_data is not None and status is not None and address is not None and next_turn is not None and game_name is not None and nations_data is not None and minutes_left is not None and turn is not None:
+        if all(var is not None for var in [scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn]):
             channels[channel_id]['nations'] = nations_data
             channels[channel_id]['status'] = status
             channels[channel_id]['address'] = address
@@ -144,7 +143,8 @@ async def forcescrape(ctx):
             save_channels(channels)
             await ctx.send(f"Scraped website and updated nation data for channel {ctx.channel.mention}")
         else:
-            await ctx.send('Failed to scrape website')
+            none_vars = [var for var, value in zip(['scraped_data', 'status', 'address', 'next_turn', 'game_name', 'nations_data', 'minutes_left', 'turn'], [scraped_data, status, address, next_turn, game_name, nations_data, minutes_left, turn]) if value is None]
+            await ctx.send(f"Failed to scrape website. The following values are None: {', '.join(none_vars)}")
     else:
         await ctx.send(f"Channel {ctx.channel.mention} is not bound to a URL")
 
